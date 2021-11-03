@@ -6,6 +6,7 @@ const kWhiteColor = Color(0xffffffff);
 const kTransParent = Color(0x00ffffff);
 const kDisabledColor = Color(0xFFA7A7A7);
 const kGreenColor = Color(0xFF11DD77);
+const kButtonColor = Color(0xff09C1DE);
 
 //Default Padding;
 const kPaddingDefaultAll = EdgeInsets.all(8);
