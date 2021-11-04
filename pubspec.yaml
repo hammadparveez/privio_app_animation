@@ -39,6 +39,7 @@ dependencies:
   flutter_staggered_animations: ^1.0.0
   font_awesome_flutter: ^9.2.0
   animated_size_and_fade: ^3.0.0
+  hooks_riverpod: ^0.14.0+5
 
 dev_dependencies:
   flutter_test:

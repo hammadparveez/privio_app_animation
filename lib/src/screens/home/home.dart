@@ -6,12 +6,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:privio/src/domain/models/card_model.dart';
+import 'package:privio/src/domain/state_management/pods.dart';
+import 'package:privio/src/screens/app_animations/app_animations.dart';
+import 'package:privio/src/screens/home/components/stacked_positioned_animation.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/helper.dart';
 import 'package:privio/src/shared/images.dart';
 import 'package:privio/src/shared/strings.dart';
 import 'package:simple_animations/simple_animations.dart';
 import 'package:supercharged/supercharged.dart' as charge;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final _models = [
+  CardModel(
+      id: 1,
+      title: 'Avenger Age of Ultrion',
+      cardImage: grid2,
+      isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'The Amazing Spider Man',
+      cardImage: grid4,
+      isTrailer: false),
+  CardModel(id: 1, title: 'The Thor', cardImage: grid5, isTrailer: false),
+  CardModel(id: 1, title: 'Ultra Superman', cardImage: grid6, isTrailer: true),
+];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -21,7 +41,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
-  final _positionedKey = GlobalKey<_StackedPositionedAnimatedState>();
+  final _positionedKey = GlobalKey<StackedPositionedAnimatedState>();
   late ScrollController _scrollController;
 
   @override
@@ -37,7 +57,6 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   }
 
   bool _onScrollNotification(UserScrollNotification notification) {
-    print("Notify --");
     if (notification.direction == ScrollDirection.forward) {
       if (notification.metrics.pixels != 0.0) {
         _positionedKey.currentState?.bringUpButton();
@@ -50,16 +69,8 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("Build");
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        title: Image.asset(
-          logo,
-          width: 150,
-        ),
-        leading: const Icon(Icons.menu),
-      ),
+      appBar: _buildAppBar(),
       body: Padding(
         padding: kPaddingXlHzt,
         child: Stack(
@@ -77,6 +88,31 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
               key: _positionedKey,
               scrollController: _scrollController,
             ),
+            Consumer(
+              builder: (_, watch, child) {
+                return watch(cardService).selectedItems.isEmpty
+                    ? const SizedBox()
+                    : PlayAnimation<double>(
+                        duration: 1000.milliseconds,
+                        curve: Curves.easeInOutBack,
+                        tween: Tween(begin: -50, end: 40),
+                        builder: (context, child, value) {
+                          return Positioned(
+                              bottom: value,
+                              right: 10,
+                              left: 10,
+                              child: child!);
+                        },
+                        child: FractionallySizedBox(
+                          widthFactor: 1,
+                          child: ElevatedButton(
+                            onPressed: () {},
+                            child: Text("Next Step".toUpperCase()),
+                          ),
+                        ),
+                      );
+              },
+            ),
           ],
         ),
       ),
@@ -89,88 +125,146 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
         padding: kPaddingXXlVrt,
         child: GridView.builder(
             controller: _scrollController,
-            itemCount: 50,
+            itemCount: _models.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 25,
                 mainAxisExtent: 220,
                 mainAxisSpacing: 20),
             itemBuilder: (_, index) {
-              return AnimationLimiter(
-                child: AnimationConfiguration.staggeredGrid(
-                  delay: 300.milliseconds,
-                  columnCount: 2,
-                  position: index % 2 == 0 ? 0 : 1,
-                  child: SlideAnimation(
-                    duration: 1000.milliseconds,
-                    verticalOffset: -MediaQuery.of(context).size.height * .05,
-                    horizontalOffset: -50,
-                    child: FadeInAnimation(
-                      duration: 1500.milliseconds,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child:
-                                LayoutBuilder(builder: (context, constraints) {
-                              final diagonal = getDiagonal(
-                                  constraints.maxHeight, constraints.maxWidth);
-                              return Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.asset(
-                                      grid2,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 10,
-                                    right: 10,
-                                    child: Container(
-                                      width: 25,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                              width: 3, color: kWhiteColor)),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: -diagonal * .25,
-                                    top: diagonal * .45,
-                                    width: diagonal,
-                                    child: Container(
-                                      color: kGreenColor,
-                                      alignment: Alignment.center,
-                                      transform: Matrix4.identity()
-                                        ..rotateZ(-45 * (pi / 180)),
-                                      child: Text(
-                                        'trailer'.toUpperCase(),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyText1
-                                            ?.copyWith(
-                                                fontSize: 12,
-                                                color: kWhiteColor),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ),
-                          const SizedBox(height: 10),
-                          Text("Avengers: Age Of Ultrion",
-                              style: Theme.of(context).textTheme.bodyText1),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
+              final card = _models[index];
+              return _animatedCardTile(index, card);
             }),
+      ),
+    );
+  }
+
+  AnimationLimiter _animatedCardTile(int index, CardModel card) {
+    return AnimationLimiter(
+      child: AnimationConfiguration.staggeredGrid(
+        delay: 300.milliseconds,
+        columnCount: 2,
+        position: index % 2 == 0 ? 0 : 1,
+        child: SlideAnimation(
+          duration: 1000.milliseconds,
+          verticalOffset: -MediaQuery.of(context).size.height * .05,
+          horizontalOffset: -50,
+          child: FadeInAnimation(
+            duration: 1500.milliseconds,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    final diagonal = getDiagonal(
+                        constraints.maxHeight, constraints.maxWidth);
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _buildRoundedImage(card),
+                        Positioned(
+                          left: -diagonal * .25,
+                          top: diagonal * .45,
+                          width: diagonal,
+                          child: _buildRotatedBanner(card),
+                        ),
+                        _buildShadowSelector(constraints, card),
+                        Positioned(
+                          bottom: 10,
+                          right: 10,
+                          child: _buildSelectorButton(card),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+                const SizedBox(height: 10),
+                Text(card.title, style: Theme.of(context).textTheme.bodyText1),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  GestureDetector _buildSelectorButton(CardModel card) {
+    return GestureDetector(
+      onTap: () {
+        var provider = context.read(cardService);
+        if (provider.find(card)) {
+          provider.removeItem(card);
+        } else {
+          provider.addItem(card);
+        }
+      },
+      child: Container(
+        width: 25,
+        height: 25,
+        padding: const EdgeInsets.all(3),
+        child: const Material(
+          color: kWhiteColor,
+          shape: CircleBorder(),
+        ),
+        decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(width: 3, color: kWhiteColor)),
+      ),
+    );
+  }
+
+  ClipRRect _buildRoundedImage(CardModel card) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.asset(
+        card.cardImage,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  Consumer _buildShadowSelector(BoxConstraints constraints, CardModel card) {
+    return Consumer(
+      builder: (context, watch, child) {
+        return AnimatedCrossFade(
+            reverseDuration: 250.milliseconds,
+            firstChild: SizedBox(
+              height: constraints.maxHeight,
+              width: constraints.maxWidth,
+              child: PlayAnimation<double>(
+                tween: Tween(begin: .8, end: .5),
+                builder: (_, child, value) {
+                  return DecoratedBox(
+                    decoration: BoxDecoration(boxShadow: [
+                      BoxShadow(
+                          color: kBlackColor.withOpacity(value),
+                          spreadRadius: 5,
+                          blurRadius: 30),
+                    ]),
+                  );
+                },
+              ),
+            ),
+            secondChild: const SizedBox(),
+            crossFadeState: watch(cardService).find(card)
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            duration: 250.milliseconds);
+      },
+    );
+  }
+
+  Widget _buildRotatedBanner(CardModel card) {
+    return Container(
+      color: card.isTrailer ? kGreenColor : kButtonColor,
+      alignment: Alignment.center,
+      transform: Matrix4.identity()..rotateZ(-45 * (pi / 180)),
+      child: Text(
+        '${card.isTrailer ? 'trailer' : 'film'}'.toUpperCase(),
+        style: Theme.of(context)
+            .textTheme
+            .bodyText1
+            ?.copyWith(height: 1.4, fontSize: 12, color: kWhiteColor),
       ),
     );
   }
@@ -206,9 +300,7 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
           const SizedBox(width: 20),
           IconButton(
             icon: const Icon(FontAwesomeIcons.sortAlphaDown),
-            onPressed: () {
-              controller.play();
-            },
+            onPressed: () {},
           ),
           const SizedBox(width: 10),
           IconButton(
@@ -235,241 +327,15 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
       ),
     );
   }
-}
 
-class StackedPositionedAnimated extends StatefulWidget {
-  final ScrollController scrollController;
-  const StackedPositionedAnimated({
-    Key? key,
-    required this.scrollController,
-  }) : super(key: key);
-
-  @override
-  State<StackedPositionedAnimated> createState() =>
-      _StackedPositionedAnimatedState();
-}
-
-class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
-    with AnimationMixin {
-  CustomAnimationControl customAnimationControl = CustomAnimationControl.stop,
-      customAnimationScaleControl = CustomAnimationControl.stop;
-  CrossFadeState _currentFadeState = CrossFadeState.showFirst;
-  static final _positioningTween = Tween<double>(begin: -50, end: 30);
-  static final _scalingTween = Tween<double>(begin: 1, end: 1.2);
-  @override
-  void initState() {
-    super.initState();
-
-    widget.scrollController.addListener(() {
-      if (widget.scrollController.position.pixels ==
-          widget.scrollController.position.maxScrollExtent) {
-        takeDownButton();
-      }
-    });
-
-    //Show Scroll Button after a 2sec Delay
-    Future.delayed(
-        2000.milliseconds,
-        () => setState(() {
-              customAnimationControl = CustomAnimationControl.play;
-            }));
-    //Show Arrow after 5 seconds
-    Future.delayed(5500.milliseconds, () {
-      setState(() {
-        _currentFadeState = CrossFadeState.showSecond;
-      });
-    });
-  }
-
-  //Create Tween
-  TimelineTween<Prop> createTween() {
-    //total Animation Duration 3500 milliseconds
-    var tween = TimelineTween<Prop>(curve: Curves.easeInOutBack);
-
-    var _fristScene = tween
-        .addScene(begin: 0.milliseconds, end: 1500.milliseconds)
-        .animate(Prop.y, tween: _positioningTween);
-
-    _fristScene
-        .addSubsequentScene(
-            delay: 500.milliseconds, duration: 2000.milliseconds)
-        .animate(
-          Prop.i,
-          tween: DecorationTween(
-              begin: BoxDecoration(
-                shape: BoxShape.rectangle,
-              ),
-              end: const BoxDecoration(shape: BoxShape.circle)),
-        )
-        .animate(Prop.color,
-            tween: ColorTween(begin: Colors.green, end: Colors.yellow))
-        .animate(Prop.x,
-            tween: AlignmentTween(
-              begin: Alignment.center,
-              end: Alignment.centerRight,
-            ))
-        //animate fontSize to 0
-        .animate(Prop.size, tween: Tween<double>(begin: 14, end: 0))
-        //to make border shape circle
-        .animate(Prop.radius,
-            tween: ShapeBorderTween(
-                begin: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                end: const CircleBorder()));
-
-    return tween;
-  }
-
-  void bringUpButton() {
-    if (customAnimationControl != CustomAnimationControl.play) {
-      setState(() {
-        customAnimationControl = CustomAnimationControl.play;
-      });
-    }
-    Future.delayed(
-        3500.milliseconds,
-        () => setState(() {
-              _currentFadeState = CrossFadeState.showSecond;
-            }));
-  }
-
-  takeDownButton() {
-    if (customAnimationControl != CustomAnimationControl.playReverse) {
-      setState(() {
-        customAnimationControl = CustomAnimationControl.playReverse;
-      });
-    }
-    Future.delayed(
-        700.milliseconds,
-        () => setState(() {
-              _currentFadeState = CrossFadeState.showFirst;
-            }));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    print("Build->StackPositioned");
-    return CustomAnimation<TimelineValue<Prop>>(
-        duration: createTween().duration, // 1000.milliseconds,
-
-        tween: createTween(),
-        control: customAnimationControl,
-        onComplete: () {
-          print("On Complete ${createTween().duration}");
-        },
-        builder: (context, child, prop) {
-          return Positioned(
-            left: 20,
-            right: 20,
-            bottom: prop.get(Prop.y),
-            height: 40,
-            child: LayoutBuilder(builder: (context, constraints) {
-              return Align(
-                alignment: prop.get(Prop.x),
-                child: Material(
-                  shape: CircleBorder(),
-                  child: Container(
-                    decoration: (prop.get(Prop.i) as BoxDecoration).copyWith(
-                      boxShadow: [
-                        BoxShadow(
-                            offset: Offset(0, 0),
-                            blurRadius: 15,
-                            spreadRadius: 10,
-                            color: kButtonColor.withOpacity(.3)),
-                      ],
-                    ),
-                    child: CustomAnimation<double>(
-                      duration: 800.milliseconds,
-                      curve: Curves.easeInOutBack,
-                      control: customAnimationScaleControl,
-                      tween: _scalingTween,
-                      animationStatusListener: (status) {
-                        if (status == AnimationStatus.completed) {
-                          setState(() {
-                            customAnimationScaleControl =
-                                CustomAnimationControl.playReverse;
-                          });
-                        }
-                      },
-                      builder: (context, child, value) {
-                        return Transform.scale(
-                          scale: value,
-                          child: AnimatedSizeAndFade(
-                            child:
-                                _currentFadeState == CrossFadeState.showSecond
-                                    ? _buildScrollIconButton()
-                                    : FractionallySizedBox(
-                                        widthFactor: 1,
-                                        child: ElevatedButton(
-                                          child: Text(
-                                            "Scroll More".toUpperCase(),
-                                            style: TextStyle(
-                                                fontSize: prop.get(Prop.size)),
-                                          ),
-                                          onPressed: _onScrollTap,
-                                          style: _defaultButtonStyle(prop),
-                                        ),
-                                      ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            }),
-          );
-        });
-  }
-
-  _defaultButtonStyle(TimelineValue<Prop> prop) {
-    return ButtonStyle(
-      elevation: MaterialStateProperty.all(40),
-      shadowColor: MaterialStateProperty.all(kGreenColor),
-      shape: MaterialStateProperty.all(
-        prop.get(Prop.radius),
-        //RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+  AppBar _buildAppBar() {
+    return AppBar(
+      titleSpacing: 0,
+      title: Image.asset(
+        logo,
+        width: 150,
       ),
-      backgroundColor: MaterialStateProperty.all(kButtonColor),
-      foregroundColor: MaterialStateProperty.all(kWhiteColor),
-      textStyle: MaterialStateProperty.all(Theme.of(context)
-          .textTheme
-          .bodyText1
-          ?.copyWith(fontWeight: FontWeight.w500)),
+      leading: const Icon(Icons.menu),
     );
-  }
-
-  Widget _buildScrollIconButton() {
-    return Material(
-      type: MaterialType.canvas,
-      shape: const CircleBorder(),
-      elevation: 8,
-      shadowColor: kThemeColor,
-      color: kButtonColor,
-      clipBehavior: Clip.antiAlias,
-      child: IconButton(
-          color: kWhiteColor,
-          iconSize: 20,
-          icon: const Icon(
-            FontAwesomeIcons.arrowDown,
-          ),
-          onPressed: _onScrollTap),
-    );
-  }
-
-  _onScrollTap() {
-    setState(() {
-      customAnimationScaleControl = CustomAnimationControl.play;
-    });
-
-    final currentPositioned = widget.scrollController.position.pixels;
-    final maxPositioned = widget.scrollController.position.maxScrollExtent;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final double offset =
-        (currentPositioned < (maxPositioned - screenHeight * .5))
-            ? 500
-            : maxPositioned - currentPositioned;
-    widget.scrollController.animateTo(offset + currentPositioned,
-        duration: 1500.milliseconds, curve: Curves.decelerate);
   }
 }

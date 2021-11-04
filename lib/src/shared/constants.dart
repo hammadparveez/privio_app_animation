@@ -3,10 +3,12 @@ import 'package:flutter/rendering.dart';
 const kThemeColor = Color(0xff29254a);
 const kLightThemeColor = Color(0xFF7463DD);
 const kWhiteColor = Color(0xffffffff);
+const kBlackColor = Color(0xff000000);
 const kTransParent = Color(0x00ffffff);
 const kDisabledColor = Color(0xFFA7A7A7);
 const kGreenColor = Color(0xFF11DD77);
 const kButtonColor = Color(0xff09C1DE);
+
 
 //Default Padding;
 const kPaddingDefaultAll = EdgeInsets.all(8);
