@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   }
 
   bool _onScrollNotification(UserScrollNotification notification) {
+    print("Notify --");
     if (notification.direction == ScrollDirection.forward) {
       if (notification.metrics.pixels != 0.0) {
         _positionedKey.currentState?.bringUpButton();
@@ -253,7 +254,7 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
   CustomAnimationControl customAnimationControl = CustomAnimationControl.stop,
       customAnimationScaleControl = CustomAnimationControl.stop;
   CrossFadeState _currentFadeState = CrossFadeState.showFirst;
-  static final _positioningTween = Tween<double>(begin: -50, end: 40);
+  static final _positioningTween = Tween<double>(begin: -50, end: 30);
   static final _scalingTween = Tween<double>(begin: 1, end: 1.2);
   @override
   void initState() {
@@ -272,8 +273,8 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
         () => setState(() {
               customAnimationControl = CustomAnimationControl.play;
             }));
-    //Initially show Button
-    Future.delayed(5000.milliseconds, () {
+    //Show Arrow after 5 seconds
+    Future.delayed(5500.milliseconds, () {
       setState(() {
         _currentFadeState = CrossFadeState.showSecond;
       });
@@ -282,19 +283,23 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
 
   //Create Tween
   TimelineTween<Prop> createTween() {
-    //total Animation Duration 7 seconds; exluding startup 2 seconds
-    // total duration 9 seconds
+    //total Animation Duration 3500 milliseconds
     var tween = TimelineTween<Prop>(curve: Curves.easeInOutBack);
 
     var _fristScene = tween
-        .addScene(begin: 0.milliseconds, end: 2000.milliseconds)
+        .addScene(begin: 0.milliseconds, end: 1500.milliseconds)
         .animate(Prop.y, tween: _positioningTween);
 
     _fristScene
         .addSubsequentScene(
-            delay: 500.milliseconds,
-            duration: 2000.milliseconds,
-            curve: Curves.easeInOutBack)
+            delay: 500.milliseconds, duration: 2000.milliseconds)
+        .animate(Prop.color,
+            tween: ColorTween(begin: Colors.green, end: Colors.yellow))
+        .animate(Prop.x,
+            tween: AlignmentTween(
+              begin: Alignment.center,
+              end: Alignment.centerRight,
+            ))
         //animate fontSize to 0
         .animate(Prop.size, tween: Tween<double>(begin: 14, end: 0))
         //to make border shape circle
@@ -302,13 +307,8 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
             tween: ShapeBorderTween(
                 begin: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
-                end: const CircleBorder()))
-        //align button to the right
-        .animate(Prop.x,
-            tween: AlignmentTween(
-              begin: Alignment.center,
-              end: Alignment.centerRight,
-            ));
+                end: const CircleBorder()));
+
     return tween;
   }
 
@@ -319,7 +319,7 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
       });
     }
     Future.delayed(
-        2500.milliseconds,
+        3500.milliseconds,
         () => setState(() {
               _currentFadeState = CrossFadeState.showSecond;
             }));
@@ -332,7 +332,7 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
       });
     }
     Future.delayed(
-        2500.milliseconds,
+        700.milliseconds,
         () => setState(() {
               _currentFadeState = CrossFadeState.showFirst;
             }));
@@ -343,9 +343,12 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
     print("Build->StackPositioned");
     return CustomAnimation<TimelineValue<Prop>>(
         duration: createTween().duration, // 1000.milliseconds,
-        curve: Curves.easeInOutBack,
+
         tween: createTween(),
         control: customAnimationControl,
+        onComplete: () {
+          print("On Complete ${createTween().duration}");
+        },
         builder: (context, child, prop) {
           return Positioned(
             left: 20,
@@ -353,11 +356,10 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
             bottom: prop.get(Prop.y),
             height: 40,
             child: LayoutBuilder(builder: (context, constraints) {
-              return AnimatedAlign(
+              return Align(
                 alignment: prop.get(Prop.x),
-                duration: 1000.milliseconds,
                 child: CustomAnimation<double>(
-                  duration: 1000.milliseconds,
+                  duration: 800.milliseconds,
                   curve: Curves.easeInOutBack,
                   control: customAnimationScaleControl,
                   tween: _scalingTween,
@@ -373,12 +375,10 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
                     return Transform.scale(
                       scale: value,
                       child: AnimatedSizeAndFade(
-                        sizeDuration: 500.milliseconds,
-                        fadeDuration: 500.milliseconds,
                         child: _currentFadeState == CrossFadeState.showSecond
                             ? _buildScrollIconButton()
                             : FractionallySizedBox(
-                                widthFactor: .8,
+                                widthFactor: 1,
                                 child: ElevatedButton(
                                   child: Text(
                                     "Scroll More".toUpperCase(),
@@ -438,24 +438,15 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
     setState(() {
       customAnimationScaleControl = CustomAnimationControl.play;
     });
-    Future.delayed(1.seconds, () {
-      final currentPositioned = widget.scrollController.position.pixels;
-      final maxPositioned = widget.scrollController.position.maxScrollExtent;
-      final screenHeight = MediaQuery.of(context).size.height;
-      final double offset =
-          (currentPositioned < (maxPositioned - screenHeight * .5))
-              ? 500
-              : maxPositioned - currentPositioned;
-      widget.scrollController.animateTo(768,
-          duration: 1500.milliseconds, curve: Curves.easeInOutBack);
 
-      widget.scrollController.addListener(() {
-        if (maxPositioned == currentPositioned) {
-          setState(() {
-            customAnimationControl = CustomAnimationControl.playReverse;
-          });
-        }
-      });
-    });
+    final currentPositioned = widget.scrollController.position.pixels;
+    final maxPositioned = widget.scrollController.position.maxScrollExtent;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final double offset =
+        (currentPositioned < (maxPositioned - screenHeight * .5))
+            ? 500
+            : maxPositioned - currentPositioned;
+    widget.scrollController.animateTo(offset + currentPositioned,
+        duration: 1500.milliseconds, curve: Curves.decelerate);
   }
 }
