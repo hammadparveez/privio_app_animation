@@ -38,6 +38,7 @@ dependencies:
   simple_animations: ^4.0.1
   flutter_staggered_animations: ^1.0.0
   font_awesome_flutter: ^9.2.0
+  animated_size_and_fade: ^3.0.0
 
 dev_dependencies:
   flutter_test:

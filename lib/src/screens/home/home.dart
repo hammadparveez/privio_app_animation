@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:animated_size_and_fade/animated_size_and_fade.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -12,8 +13,6 @@ import 'package:privio/src/shared/strings.dart';
 import 'package:simple_animations/simple_animations.dart';
 import 'package:supercharged/supercharged.dart' as charge;
 
-enum AniProps { width, height, color }
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -23,14 +22,29 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   final _positionedKey = GlobalKey<_StackedPositionedAnimatedState>();
-
   late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-
     _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _onScrollNotification(UserScrollNotification notification) {
+    if (notification.direction == ScrollDirection.forward) {
+      if (notification.metrics.pixels != 0.0) {
+        _positionedKey.currentState?.bringUpButton();
+      }
+    } else if (notification.direction == ScrollDirection.reverse) {
+      _positionedKey.currentState?.takeDownButton();
+    }
+    return true;
   }
 
   @override
@@ -51,29 +65,13 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
           children: [
             Column(
               children: [
-                AnimationLimiter(child: _buildAnimatedTopBar(context)),
-                NotificationListener<UserScrollNotification>(
-                    onNotification: (notification) {
-                      print(
-                          "ScrollNotificaiton ${notification.metrics.pixels} and ${notification.metrics.maxScrollExtent}");
-                      // if (notification.metrics.pixels ==
-                      //     notification.metrics.maxScrollExtent) {
-                      //   _positionedKey.currentState?.takeDownButton();
-                      // }
-
-                      if (notification.direction == ScrollDirection.forward) {
-                        if (notification.metrics.pixels != 0.0) {
-                          _positionedKey.currentState?.bringUpButton();
-                        }
-                      } else if (notification.direction ==
-                          ScrollDirection.reverse) {
-                        _positionedKey.currentState?.takeDownButton();
-                      }
-                      return true;
-                    },
+                _buildAnimatedTopBar(),
+                NotificationListener(
+                    onNotification: _onScrollNotification,
                     child: _buildStaggeredGridView(context)),
               ],
             ),
+            //Scroll More Button above content
             StackedPositionedAnimated(
               key: _positionedKey,
               scrollController: _scrollController,
@@ -99,15 +97,15 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
             itemBuilder: (_, index) {
               return AnimationLimiter(
                 child: AnimationConfiguration.staggeredGrid(
-                  delay: const Duration(milliseconds: 300),
+                  delay: 300.milliseconds,
                   columnCount: 2,
                   position: index % 2 == 0 ? 0 : 1,
                   child: SlideAnimation(
-                    duration: Duration(milliseconds: 1000),
+                    duration: 1000.milliseconds,
                     verticalOffset: -MediaQuery.of(context).size.height * .05,
                     horizontalOffset: -50,
                     child: FadeInAnimation(
-                      duration: Duration(milliseconds: 1500),
+                      duration: 1500.milliseconds,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -176,47 +174,34 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
     );
   }
 
-  Column _buildAnimatedTopBar(BuildContext context) {
-    return Column(
+  Widget _buildAnimatedTopBar() {
+    return AnimationLimiter(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: AnimationConfiguration.toStaggeredList(
             childAnimationBuilder: (widget) {
               return SlideAnimation(
-                  delay: Duration(milliseconds: 200),
-                  duration: Duration(milliseconds: 500),
+                  delay: 500.milliseconds,
+                  duration: 500.milliseconds,
                   verticalOffset: -30,
                   curve: Curves.easeInQuad,
                   child: FadeInAnimation(
-                    duration: Duration(milliseconds: 800),
+                    duration: 1000.milliseconds,
                     curve: Curves.easeInQuad,
                     child: widget,
                   ));
             },
-            children: [
-              ..._listOfChildren(context),
-            ]));
+            children: _listOfChildren),
+      ),
+    );
   }
 
-  List<Widget> _listOfChildren(BuildContext context) {
+  List<Widget> get _listOfChildren {
     return [
       Text(AppStrings.dashBoard, style: Theme.of(context).textTheme.headline2),
       Row(
         children: [
-          Flexible(
-              child: TextFormField(
-            decoration: InputDecoration(
-              hintText: AppStrings.search,
-              prefixIconConstraints:
-                  const BoxConstraints(minHeight: 48, minWidth: 0),
-              prefixIcon: Padding(
-                padding: kPaddingDefaultRight,
-                child: Image.asset(searchIcon,
-                    color: kLightThemeColor,
-                    height: 24,
-                    width: 24), //Icon(Icons.search, color: kLightThemeColor),
-              ),
-            ),
-          )),
+          Flexible(child: _searchFormField()),
           const SizedBox(width: 20),
           IconButton(
             icon: const Icon(FontAwesomeIcons.sortAlphaDown),
@@ -232,6 +217,22 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
         ],
       ),
     ];
+  }
+
+  Widget _searchFormField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        hintText: AppStrings.search,
+        prefixIconConstraints: const BoxConstraints(minHeight: 48, minWidth: 0),
+        prefixIcon: Padding(
+          padding: kPaddingDefaultRight,
+          child: Image.asset(searchIcon,
+              color: kLightThemeColor,
+              height: 24,
+              width: 24), //Icon(Icons.search, color: kLightThemeColor),
+        ),
+      ),
+    );
   }
 }
 
@@ -249,10 +250,9 @@ class StackedPositionedAnimated extends StatefulWidget {
 
 class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
     with AnimationMixin {
-  CustomAnimationControl customAnimationControl = CustomAnimationControl.stop;
-  CustomAnimationControl customAnimationScaleControl =
-      CustomAnimationControl.stop;
-
+  CustomAnimationControl customAnimationControl = CustomAnimationControl.stop,
+      customAnimationScaleControl = CustomAnimationControl.stop;
+  CrossFadeState _currentFadeState = CrossFadeState.showFirst;
   static final _positioningTween = Tween<double>(begin: -50, end: 40);
   static final _scalingTween = Tween<double>(begin: 1, end: 1.2);
   @override
@@ -266,11 +266,50 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
       }
     });
 
-    //Initially show Button
+    //Show Scroll Button after a 2sec Delay
     Future.delayed(
         2000.milliseconds,
-        () => setState(
-            () => customAnimationControl = CustomAnimationControl.play));
+        () => setState(() {
+              customAnimationControl = CustomAnimationControl.play;
+            }));
+    //Initially show Button
+    Future.delayed(5000.milliseconds, () {
+      setState(() {
+        _currentFadeState = CrossFadeState.showSecond;
+      });
+    });
+  }
+
+  //Create Tween
+  TimelineTween<Prop> createTween() {
+    //total Animation Duration 7 seconds; exluding startup 2 seconds
+    // total duration 9 seconds
+    var tween = TimelineTween<Prop>(curve: Curves.easeInOutBack);
+
+    var _fristScene = tween
+        .addScene(begin: 0.milliseconds, end: 2000.milliseconds)
+        .animate(Prop.y, tween: _positioningTween);
+
+    _fristScene
+        .addSubsequentScene(
+            delay: 500.milliseconds,
+            duration: 2000.milliseconds,
+            curve: Curves.easeInOutBack)
+        //animate fontSize to 0
+        .animate(Prop.size, tween: Tween<double>(begin: 14, end: 0))
+        //to make border shape circle
+        .animate(Prop.radius,
+            tween: ShapeBorderTween(
+                begin: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                end: const CircleBorder()))
+        //align button to the right
+        .animate(Prop.x,
+            tween: AlignmentTween(
+              begin: Alignment.center,
+              end: Alignment.centerRight,
+            ));
+    return tween;
   }
 
   void bringUpButton() {
@@ -279,6 +318,11 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
         customAnimationControl = CustomAnimationControl.play;
       });
     }
+    Future.delayed(
+        2500.milliseconds,
+        () => setState(() {
+              _currentFadeState = CrossFadeState.showSecond;
+            }));
   }
 
   takeDownButton() {
@@ -287,24 +331,32 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
         customAnimationControl = CustomAnimationControl.playReverse;
       });
     }
+    Future.delayed(
+        2500.milliseconds,
+        () => setState(() {
+              _currentFadeState = CrossFadeState.showFirst;
+            }));
   }
 
   @override
   Widget build(BuildContext context) {
     print("Build->StackPositioned");
-    return CustomAnimation<double>(
-        duration: 1000.milliseconds,
+    return CustomAnimation<TimelineValue<Prop>>(
+        duration: createTween().duration, // 1000.milliseconds,
         curve: Curves.easeInOutBack,
-        tween: _positioningTween,
+        tween: createTween(),
         control: customAnimationControl,
-        builder: (context, child, value) {
+        builder: (context, child, prop) {
           return Positioned(
             left: 20,
             right: 20,
-            bottom: value,
+            bottom: prop.get(Prop.y),
             height: 40,
-            child: FractionallySizedBox(
-              child: CustomAnimation<double>(
+            child: LayoutBuilder(builder: (context, constraints) {
+              return AnimatedAlign(
+                alignment: prop.get(Prop.x),
+                duration: 1000.milliseconds,
+                child: CustomAnimation<double>(
                   duration: 1000.milliseconds,
                   curve: Curves.easeInOutBack,
                   control: customAnimationScaleControl,
@@ -320,58 +372,90 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
                   builder: (context, child, value) {
                     return Transform.scale(
                       scale: value,
-                      child: ElevatedButton(
-                        child: const Text("SCROLL MORE"),
-                        onPressed: () {
-                          setState(() {
-                            customAnimationScaleControl =
-                                CustomAnimationControl.play;
-                          });
-                          Future.delayed(1.seconds, () {
-                            final currentPositioned =
-                                widget.scrollController.position.pixels;
-                            final maxPositioned = widget
-                                .scrollController.position.maxScrollExtent;
-                            final screenHeight =
-                                MediaQuery.of(context).size.height;
-                            final double offset = (currentPositioned <
-                                    (maxPositioned - screenHeight * .5))
-                                ? 500
-                                : maxPositioned - currentPositioned;
-                            widget.scrollController.animateTo(
-                                currentPositioned + offset,
-                                duration: 1500.milliseconds,
-                                curve: Curves.easeInOutBack);
-                            widget.scrollController.addListener(() {
-                              if (maxPositioned == currentPositioned) {
-                                setState(() {
-                                  customAnimationControl =
-                                      CustomAnimationControl.playReverse;
-                                });
-                              }
-                            });
-                          });
-                        },
-                        style: ButtonStyle(
-                          elevation: MaterialStateProperty.all(40),
-                          shadowColor: MaterialStateProperty.all(kGreenColor),
-                          shape: MaterialStateProperty.all(
-                              RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100))),
-                          backgroundColor:
-                              MaterialStateProperty.all(kButtonColor),
-                          foregroundColor:
-                              MaterialStateProperty.all(kWhiteColor),
-                          textStyle: MaterialStateProperty.all(Theme.of(context)
-                              .textTheme
-                              .bodyText1
-                              ?.copyWith(fontWeight: FontWeight.w500)),
-                        ),
+                      child: AnimatedSizeAndFade(
+                        sizeDuration: 500.milliseconds,
+                        fadeDuration: 500.milliseconds,
+                        child: _currentFadeState == CrossFadeState.showSecond
+                            ? _buildScrollIconButton()
+                            : FractionallySizedBox(
+                                widthFactor: .8,
+                                child: ElevatedButton(
+                                  child: Text(
+                                    "Scroll More".toUpperCase(),
+                                    style: TextStyle(
+                                        fontSize: prop.get(Prop.size)),
+                                  ),
+                                  onPressed: _onScrollTap,
+                                  style: _defaultButtonStyle(prop),
+                                ),
+                              ),
                       ),
                     );
-                  }),
-            ),
+                  },
+                ),
+              );
+            }),
           );
         });
+  }
+
+  _defaultButtonStyle(TimelineValue<Prop> prop) {
+    return ButtonStyle(
+      elevation: MaterialStateProperty.all(40),
+      shadowColor: MaterialStateProperty.all(kGreenColor),
+      shape: MaterialStateProperty.all(
+        prop.get(Prop.radius),
+        //RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+      ),
+      backgroundColor: MaterialStateProperty.all(kButtonColor),
+      foregroundColor: MaterialStateProperty.all(kWhiteColor),
+      textStyle: MaterialStateProperty.all(Theme.of(context)
+          .textTheme
+          .bodyText1
+          ?.copyWith(fontWeight: FontWeight.w500)),
+    );
+  }
+
+  Widget _buildScrollIconButton() {
+    return Material(
+      type: MaterialType.canvas,
+      shape: const CircleBorder(),
+      elevation: 8,
+      shadowColor: kThemeColor,
+      color: kButtonColor,
+      clipBehavior: Clip.antiAlias,
+      child: IconButton(
+          color: kWhiteColor,
+          iconSize: 20,
+          icon: const Icon(
+            FontAwesomeIcons.arrowDown,
+          ),
+          onPressed: _onScrollTap),
+    );
+  }
+
+  _onScrollTap() {
+    setState(() {
+      customAnimationScaleControl = CustomAnimationControl.play;
+    });
+    Future.delayed(1.seconds, () {
+      final currentPositioned = widget.scrollController.position.pixels;
+      final maxPositioned = widget.scrollController.position.maxScrollExtent;
+      final screenHeight = MediaQuery.of(context).size.height;
+      final double offset =
+          (currentPositioned < (maxPositioned - screenHeight * .5))
+              ? 500
+              : maxPositioned - currentPositioned;
+      widget.scrollController.animateTo(768,
+          duration: 1500.milliseconds, curve: Curves.easeInOutBack);
+
+      widget.scrollController.addListener(() {
+        if (maxPositioned == currentPositioned) {
+          setState(() {
+            customAnimationControl = CustomAnimationControl.playReverse;
+          });
+        }
+      });
+    });
   }
 }
