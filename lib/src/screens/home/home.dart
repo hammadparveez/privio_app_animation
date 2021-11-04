@@ -293,6 +293,14 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
     _fristScene
         .addSubsequentScene(
             delay: 500.milliseconds, duration: 2000.milliseconds)
+        .animate(
+          Prop.i,
+          tween: DecorationTween(
+              begin: BoxDecoration(
+                shape: BoxShape.rectangle,
+              ),
+              end: const BoxDecoration(shape: BoxShape.circle)),
+        )
         .animate(Prop.color,
             tween: ColorTween(begin: Colors.green, end: Colors.yellow))
         .animate(Prop.x,
@@ -358,40 +366,55 @@ class _StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
             child: LayoutBuilder(builder: (context, constraints) {
               return Align(
                 alignment: prop.get(Prop.x),
-                child: CustomAnimation<double>(
-                  duration: 800.milliseconds,
-                  curve: Curves.easeInOutBack,
-                  control: customAnimationScaleControl,
-                  tween: _scalingTween,
-                  animationStatusListener: (status) {
-                    if (status == AnimationStatus.completed) {
-                      setState(() {
-                        customAnimationScaleControl =
-                            CustomAnimationControl.playReverse;
-                      });
-                    }
-                  },
-                  builder: (context, child, value) {
-                    return Transform.scale(
-                      scale: value,
-                      child: AnimatedSizeAndFade(
-                        child: _currentFadeState == CrossFadeState.showSecond
-                            ? _buildScrollIconButton()
-                            : FractionallySizedBox(
-                                widthFactor: 1,
-                                child: ElevatedButton(
-                                  child: Text(
-                                    "Scroll More".toUpperCase(),
-                                    style: TextStyle(
-                                        fontSize: prop.get(Prop.size)),
-                                  ),
-                                  onPressed: _onScrollTap,
-                                  style: _defaultButtonStyle(prop),
-                                ),
-                              ),
-                      ),
-                    );
-                  },
+                child: Material(
+                  shape: CircleBorder(),
+                  child: Container(
+                    decoration: (prop.get(Prop.i) as BoxDecoration).copyWith(
+                      boxShadow: [
+                        BoxShadow(
+                            offset: Offset(0, 0),
+                            blurRadius: 15,
+                            spreadRadius: 10,
+                            color: kButtonColor.withOpacity(.3)),
+                      ],
+                    ),
+                    child: CustomAnimation<double>(
+                      duration: 800.milliseconds,
+                      curve: Curves.easeInOutBack,
+                      control: customAnimationScaleControl,
+                      tween: _scalingTween,
+                      animationStatusListener: (status) {
+                        if (status == AnimationStatus.completed) {
+                          setState(() {
+                            customAnimationScaleControl =
+                                CustomAnimationControl.playReverse;
+                          });
+                        }
+                      },
+                      builder: (context, child, value) {
+                        return Transform.scale(
+                          scale: value,
+                          child: AnimatedSizeAndFade(
+                            child:
+                                _currentFadeState == CrossFadeState.showSecond
+                                    ? _buildScrollIconButton()
+                                    : FractionallySizedBox(
+                                        widthFactor: 1,
+                                        child: ElevatedButton(
+                                          child: Text(
+                                            "Scroll More".toUpperCase(),
+                                            style: TextStyle(
+                                                fontSize: prop.get(Prop.size)),
+                                          ),
+                                          onPressed: _onScrollTap,
+                                          style: _defaultButtonStyle(prop),
+                                        ),
+                                      ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               );
             }),
