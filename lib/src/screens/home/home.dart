@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:privio/src/domain/models/card_model.dart';
 import 'package:privio/src/domain/state_management/pods.dart';
 import 'package:privio/src/screens/app_animations/app_animations.dart';
+import 'package:privio/src/screens/home/components/animated_positioned_next_btn.dart';
 import 'package:privio/src/screens/home/components/stacked_positioned_animation.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/helper.dart';
@@ -85,34 +86,13 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
             ),
             //Scroll More Button above content
             StackedPositionedAnimated(
-              key: _positionedKey,
+              key:
+                  _positionedKey, //Accessing Item State in order to animate on Scroll Changes
               scrollController: _scrollController,
             ),
-            Consumer(
-              builder: (_, watch, child) {
-                return watch(cardService).selectedItems.isEmpty
-                    ? const SizedBox()
-                    : PlayAnimation<double>(
-                        duration: 1000.milliseconds,
-                        curve: Curves.easeInOutBack,
-                        tween: Tween(begin: -50, end: 40),
-                        builder: (context, child, value) {
-                          return Positioned(
-                              bottom: value,
-                              right: 10,
-                              left: 10,
-                              child: child!);
-                        },
-                        child: FractionallySizedBox(
-                          widthFactor: 1,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            child: Text("Next Step".toUpperCase()),
-                          ),
-                        ),
-                      );
-              },
-            ),
+            AnimatedPositionedNextStepButton(onTap: () {
+              
+            }),
           ],
         ),
       ),

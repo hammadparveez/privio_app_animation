@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:animated_size_and_fade/animated_size_and_fade.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:privio/src/domain/state_management/pods.dart';
 import 'package:privio/src/screens/app_animations/app_animations.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:simple_animations/simple_animations.dart';
@@ -20,12 +24,13 @@ class StackedPositionedAnimated extends StatefulWidget {
 
 class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
     with AnimationMixin {
+  final _scalingStateKey = GlobalKey<CustomScalingAnimationState>();
   CustomAnimationControl customAnimationControl = CustomAnimationControl.stop;
   CustomAnimationControl customAnimationScaleControl =
       CustomAnimationControl.stop;
 
   CrossFadeState _currentFadeState = CrossFadeState.showFirst;
-  static final _scalingTween = Tween<double>(begin: 1, end: 1.2);
+
   @override
   void initState() {
     super.initState();
@@ -69,27 +74,34 @@ class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
 
   @override
   Widget build(BuildContext context) {
-    return CustomAnimation<TimelineValue<Prop>>(
-        duration: createScrollButtonTween().duration,
-        tween: createScrollButtonTween(),
-        control: customAnimationControl,
-        builder: (context, child, prop) {
-          return Positioned(
-            left: 20,
-            right: 20,
-            bottom: prop.get(Prop.y),
-            height: 40,
-            child: LayoutBuilder(builder: (context, constraints) {
-              return Align(
-                alignment: prop.get(Prop.x),
-                child: Material(
-                  shape: const CircleBorder(),
-                  child: _neonAnimatedEffect(prop, _scalingAnimatedBtn(prop)),
-                ),
-              );
-            }),
-          );
-        });
+    return Consumer(builder: (context, watch, child) {
+      var hasItemSelected = watch(cardService).selectedItems.isNotEmpty;
+      return CustomAnimation<TimelineValue<Prop>>(
+          duration:
+              hasItemSelected ? 1.seconds : createScrollButtonTween().duration,
+          tween: createScrollButtonTween(),
+          control: hasItemSelected
+              ? CustomAnimationControl.playReverse
+              : customAnimationControl,
+          builder: (context, child, prop) {
+            return Positioned(
+              left: 20,
+              right: 20,
+              bottom: prop.get(Prop.y),
+              height: 40,
+              child: LayoutBuilder(builder: (context, constraints) {
+                return Align(
+                  alignment: prop.get(Prop.x),
+                  child: Material(
+                    shape: const CircleBorder(),
+                    type: MaterialType.transparency,
+                    child: _neonAnimatedEffect(prop, _scalingAnimatedBtn(prop)),
+                  ),
+                );
+              }),
+            );
+          });
+    });
   }
 
   Widget _neonAnimatedEffect(TimelineValue<Prop> prop, Widget child) {
@@ -108,40 +120,25 @@ class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
   }
 
   Widget _scalingAnimatedBtn(TimelineValue<Prop> prop) {
-    return CustomAnimation<double>(
-      duration: 800.milliseconds,
-      curve: Curves.easeInOutBack,
-      control: customAnimationScaleControl,
-      tween: _scalingTween,
-      animationStatusListener: (status) {
-        if (status == AnimationStatus.completed) {
-          setState(() {
-            customAnimationScaleControl = CustomAnimationControl.playReverse;
-          });
-        }
-      },
-      builder: (context, child, value) {
-        return Transform.scale(
-          scale: value,
-          child: AnimatedSizeAndFade(
-            child: _currentFadeState == CrossFadeState.showSecond
-                ? _buildScrollIconButton()
-                : FractionallySizedBox(
-                    widthFactor: 1,
-                    child: ElevatedButton(
-                      child: Text(
-                        "Scroll More".toUpperCase(),
-                        style: TextStyle(fontSize: prop.get(Prop.size)),
-                      ),
-                      onPressed: _onScrollTap,
-                      style: ButtonStyle(
-                        shape: MaterialStateProperty.all(prop.get(Prop.radius)),
-                      ),
-                    ),
+    return CustomScalingAnimation(
+      key: _scalingStateKey,
+      child: AnimatedSizeAndFade(
+        child: _currentFadeState == CrossFadeState.showSecond
+            ? _buildScrollIconButton()
+            : FractionallySizedBox(
+                widthFactor: 1,
+                child: ElevatedButton(
+                  child: Text(
+                    "Scroll More".toUpperCase(),
+                    style: TextStyle(fontSize: prop.get(Prop.size)),
                   ),
-          ),
-        );
-      },
+                  onPressed: _onScrollTap,
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all(prop.get(Prop.radius)),
+                  ),
+                ),
+              ),
+      ),
     );
   }
 
@@ -164,9 +161,10 @@ class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
   }
 
   _onScrollTap() {
-    setState(() {
-      customAnimationScaleControl = CustomAnimationControl.play;
-    });
+    _scalingStateKey.currentState?.playScalingAnimation();
+    // setState(() {
+    //   customAnimationScaleControl = CustomAnimationControl.play;
+    // });
 
     final currentPositioned = widget.scrollController.position.pixels;
     final maxPositioned = widget.scrollController.position.maxScrollExtent;
@@ -175,7 +173,47 @@ class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
         (currentPositioned < (maxPositioned - screenHeight * .5))
             ? 500
             : maxPositioned - currentPositioned;
-    widget.scrollController.animateTo(offset + currentPositioned,
-        duration: 1500.milliseconds, curve: Curves.decelerate);
+    // widget.scrollController.animateTo(offset + currentPositioned,
+    //     duration: 1500.milliseconds, curve: Curves.decelerate);
+  }
+}
+
+class CustomScalingAnimation extends StatefulWidget {
+  const CustomScalingAnimation({Key? key, required this.child})
+      : super(key: key);
+  final Widget child;
+
+  @override
+  CustomScalingAnimationState createState() => CustomScalingAnimationState();
+}
+
+class CustomScalingAnimationState extends State<CustomScalingAnimation> {
+  CustomAnimationControl customAnimationScaleControl =
+      CustomAnimationControl.stop;
+
+  playScalingAnimation() {
+    setState(() {
+      customAnimationScaleControl = CustomAnimationControl.play;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomAnimation<double>(
+        duration: 800.milliseconds,
+        curve: Curves.easeInOutBack,
+        control: customAnimationScaleControl,
+        animationStatusListener: (status) {
+          if (status == AnimationStatus.completed) {
+            setState(() {
+              customAnimationScaleControl = CustomAnimationControl.playReverse;
+            });
+          }
+        },
+        tween: scalingTween,
+        child: widget.child,
+        builder: (_, child, value) {
+          return Transform.scale(scale: value, child: child!);
+        });
   }
 }

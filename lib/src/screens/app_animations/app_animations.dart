@@ -3,14 +3,16 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_animations/simple_animations.dart';
 import 'package:supercharged/supercharged.dart';
-final _positioningTween = Tween<double>(begin: -50, end: 30);
 
+//Tweens
+final positioningTween = Tween<double>(begin: -50, end: 30);
+final scalingTween = Tween<double>(begin: 1, end: 1.1);
 TimelineTween<Prop> createScrollButtonTween() {
   var tween = TimelineTween<Prop>(curve: Curves.easeInOutBack);
 
   var _fristScene = tween
       .addScene(begin: 0.milliseconds, end: 1500.milliseconds)
-      .animate(Prop.y, tween: _positioningTween);
+      .animate(Prop.y, tween: positioningTween);
 
   _fristScene
       .addSubsequentScene(delay: 500.milliseconds, duration: 2000.milliseconds)
