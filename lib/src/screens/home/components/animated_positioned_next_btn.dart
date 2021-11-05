@@ -43,7 +43,7 @@ class _AnimatedPositionedNextStepButtonState
               child: ElevatedButton(
                 onPressed: () {
                   _scalingKey.currentState?.playScalingAnimation();
-                  widget.onTap();
+                  Future.delayed(1000.milliseconds, widget.onTap);
                 },
                 child: Text("Next Step".toUpperCase()),
               ),

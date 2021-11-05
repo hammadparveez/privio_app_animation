@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:privio/src/config/routes.dart';
 import 'package:privio/src/domain/models/card_model.dart';
 import 'package:privio/src/domain/state_management/pods.dart';
 import 'package:privio/src/screens/app_animations/app_animations.dart';
@@ -91,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
               scrollController: _scrollController,
             ),
             AnimatedPositionedNextStepButton(onTap: () {
-              
+              Navigator.pushNamed(context, Routes.formView);
             }),
           ],
         ),
@@ -274,6 +275,7 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   List<Widget> get _listOfChildren {
     return [
       Text(AppStrings.dashBoard, style: Theme.of(context).textTheme.headline2),
+      
       Row(
         children: [
           Flexible(child: _searchFormField()),
