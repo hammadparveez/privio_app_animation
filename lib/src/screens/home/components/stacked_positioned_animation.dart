@@ -191,10 +191,12 @@ class CustomScalingAnimationState extends State<CustomScalingAnimation> {
   CustomAnimationControl customAnimationScaleControl =
       CustomAnimationControl.stop;
 
-  playScalingAnimation() {
+  ///Duration of animation 800.milliseconds
+  void playScalingAnimation() {
     setState(() {
       customAnimationScaleControl = CustomAnimationControl.play;
     });
+    
   }
 
   @override

@@ -15,7 +15,7 @@ class Routes {
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case formView:
-        return MaterialPageRoute(builder: (_) => const FormScreen());
+        return MaterialPageRoute(builder: (_) =>  FormScreen());
     
     }
   }
