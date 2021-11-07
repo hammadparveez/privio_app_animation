@@ -141,7 +141,7 @@ class FormScreen extends StatelessWidget {
         decoration: const InputDecoration(hintText: 'Email Address *'),
       ),
       PlayAnimation<double>(
-        key: UniqueKey(),
+        // key: UniqueKey(),
         delay: 2000.milliseconds,
         curve: Curves.easeInOutBack,
         tween: Tween(begin: 150, end: 0),
@@ -158,7 +158,9 @@ class FormScreen extends StatelessWidget {
                         context
                             .findAncestorStateOfType<
                                 CustomScalingAnimationState>()
-                            ?.playScalingAnimation();
+                            ?.playScalingAnimation(() {
+                          Navigator.pushReplacementNamed(context, Routes.movie);
+                        });
                       },
                       child: Text("Submit")));
             }),

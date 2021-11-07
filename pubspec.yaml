@@ -42,6 +42,7 @@ dependencies:
   hooks_riverpod: ^0.14.0+5
   dotted_border: ^2.0.0+1
   parallax_animation: ^0.0.3
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

@@ -192,11 +192,11 @@ class CustomScalingAnimationState extends State<CustomScalingAnimation> {
       CustomAnimationControl.stop;
 
   ///Duration of animation 800.milliseconds
-  void playScalingAnimation() {
+  void playScalingAnimation([VoidCallback? afterAnimation]) {
     setState(() {
       customAnimationScaleControl = CustomAnimationControl.play;
     });
-    
+    Future.delayed(1500.milliseconds, afterAnimation);
   }
 
   @override
