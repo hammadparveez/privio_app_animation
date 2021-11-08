@@ -7,28 +7,38 @@ import 'package:privio/src/shared/images.dart';
 
 var _moviesList = [
   MovieBriefModel(
-      date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      time: DateFormat('HH:mm').format(DateTime.now()),
-      image: grid2,
-      title: "Avengers of Ultra Union",
-      lang: "EN"),
+    date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    time: DateFormat('HH:mm').format(DateTime.now()),
+    image: grid2,
+    title: "Avengers of Ultra Union",
+    lang: "EN",
+    hasViewd: false,
+    isNew: true,
+    isTrailer: false,
+  ),
   MovieBriefModel(
-      date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      time: DateFormat('HH:mm').format(DateTime.now()),
-      image: grid4,
-      title: "Avengers of Ultra Union",
-      lang: "EN"),
+    date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+    time: DateFormat('HH:mm').format(DateTime.now()),
+    image: grid4,
+    title: "Avengers of Ultra Union",
+    lang: "EN",
+    hasViewd: true,
+  ),
   MovieBriefModel(
       date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
       time: DateFormat('HH:mm').format(DateTime.now()),
       image: grid5,
       title: "Avengers of Ultra Union",
+      hasViewd: false,
+      isNew: true,
+      isTrailer: false,
       lang: "EN"),
   MovieBriefModel(
       date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
       time: DateFormat('HH:mm').format(DateTime.now()),
       image: grid6,
       title: "Avengers of Ultra Union",
+      hasViewd: true,
       lang: "EN"),
 ];
 
@@ -40,9 +50,10 @@ class MovieListScreen extends StatelessWidget {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: kPaddingXlHzt,
+            padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
             child: Text("Movies List",
                 style: Theme.of(context).textTheme.headline2),
           ),
@@ -50,33 +61,82 @@ class MovieListScreen extends StatelessWidget {
             child: ListView.builder(
               itemCount: _moviesList.length,
               itemBuilder: (_, index) {
+                var movie = _moviesList[index];
                 return Container(
                   padding: kPaddingXLall,
                   margin: const EdgeInsets.only(bottom: 2),
-                  color: kLightThemeColor,
+                  color: kLightThemeColor.withAlpha(50),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 80,
-                        width: 80,
-                        alignment: Alignment.bottomRight,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(_moviesList[index].image),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: SizedBox(
-                          width: 25,
-                          height: 25,
-                          child: Material(
-                            type: MaterialType.transparency,
-                            shape: const CircleBorder(),
-                            child: InkResponse(
-                                customBorder: const CircleBorder(),
-                                onTap: () {},
-                                child: Icon(FontAwesomeIcons.play,
-                                    size: 15, color: kWhiteColor)),
+                      BannerImageContainer(
+                          image: _moviesList[index].image, onTap: () {}),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: SizedBox(
+                            height: 80,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 5, horizontal: 15),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          color: movie.hasViewd
+                                              ? Colors.grey
+                                              : movie.isNew
+                                                  ? kGreenColor
+                                                  : kLightThemeColor),
+                                      child: Text(
+                                          movie.hasViewd
+                                              ? 'Viewed'
+                                              : movie.isNew
+                                                  ? 'New'
+                                                  : 'Expired',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyText1
+                                              ?.copyWith(
+                                                color: kWhiteColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                    ),
+                                    Text(_moviesList[index].date),
+                                    Text(" ${_moviesList[index].time}"),
+                                  ],
+                                ),
+                                Text(_moviesList[index].title,
+                                    style:
+                                        Theme.of(context).textTheme.bodyText1),
+                                Row(
+                                  children: [
+                                    Text(_moviesList[index].isTrailer
+                                        ? 'Trailer'
+                                        : 'Film'),
+                                    Container(
+                                      height: 15,
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 4),
+                                      child: VerticalDivider(
+                                        width: 5,
+                                        color: kWhiteColor,
+                                      ),
+                                    ),
+                                    Text(_moviesList[index].lang),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -94,7 +154,8 @@ class MovieListScreen extends StatelessWidget {
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       titleSpacing: 0,
-      leading: IconButton(onPressed: () {}, icon: Icon(FontAwesomeIcons.bars)),
+      leading:
+          IconButton(onPressed: () {}, icon: const Icon(FontAwesomeIcons.bars)),
       title: Image.asset(
         logo,
         width: 150,
@@ -133,6 +194,47 @@ class MovieListScreen extends StatelessWidget {
               )),
         ),
       ],
+    );
+  }
+}
+
+class BannerImageContainer extends StatelessWidget {
+  const BannerImageContainer({
+    Key? key,
+    required this.image,
+    this.onTap,
+  }) : super(key: key);
+  final VoidCallback? onTap;
+  final String image;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      width: 80,
+      padding: const EdgeInsets.fromLTRB(0, 0, 5, 5),
+      alignment: Alignment.bottomRight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        image: DecorationImage(
+          image: AssetImage(image),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Material(
+        shape: const CircleBorder(),
+        clipBehavior: Clip.hardEdge,
+        elevation: 8,
+        shadowColor: kBlackColor.withOpacity(.5),
+        color: kButtonColor,
+        child: InkResponse(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            child:
+                const Icon(FontAwesomeIcons.play, size: 10, color: kWhiteColor),
+          ),
+        ),
+      ),
     );
   }
 }

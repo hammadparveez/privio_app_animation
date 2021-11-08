@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class MovieBriefModel {
-  bool? hasViewd;
+  bool hasViewd;
   bool isNew;
   bool isTrailer = false;
   String date;
@@ -10,7 +10,7 @@ class MovieBriefModel {
   String title;
   String lang;
   MovieBriefModel({
-    this.hasViewd,
+    this.hasViewd=false,
     this.isNew = false,
     this.isTrailer = true,
     required this.date,

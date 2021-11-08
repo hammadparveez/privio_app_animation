@@ -75,6 +75,7 @@ class App extends StatelessWidget {
   TextTheme _textTheme() {
     return const TextTheme(
             subtitle1: TextStyle(color: kWhiteColor),
+            bodyText2: TextStyle(color: kLightThemeColor),
             bodyText1: TextStyle(
                 color: kLightThemeColor,
                 fontWeight: FontWeight.w900,
