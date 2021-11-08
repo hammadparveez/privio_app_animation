@@ -11,6 +11,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: AppStrings.appTitle,
         navigatorKey: navigatorKey,
         onGenerateRoute: Routes.onGenerateRoute,
@@ -24,66 +25,62 @@ class App extends StatelessWidget {
           textTheme: _textTheme(),
           iconTheme: const IconThemeData(color: kLightThemeColor),
           colorScheme: _colorSheme(),
-          elevatedButtonTheme: ElevatedButtonThemeData(style:_elevatedButtonTheme() ),
+          elevatedButtonTheme:
+              ElevatedButtonThemeData(style: _elevatedButtonTheme()),
         ),
       ),
     );
   }
 
-
-  
   _elevatedButtonTheme() {
     return ButtonStyle(
       elevation: MaterialStateProperty.all(40),
       shadowColor: MaterialStateProperty.all(kGreenColor),
       shape: MaterialStateProperty.all(
-       RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
-      ),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
       backgroundColor: MaterialStateProperty.all(kButtonColor),
       foregroundColor: MaterialStateProperty.all(kWhiteColor),
-      textStyle: MaterialStateProperty.all(_textTheme()
-          
-          .bodyText1
-          ?.copyWith(fontWeight: FontWeight.w500)),
+      textStyle: MaterialStateProperty.all(
+          _textTheme().bodyText1?.copyWith(fontWeight: FontWeight.w500)),
     );
   }
 
   InputDecorationTheme _inputDecoration() {
     return const InputDecorationTheme(
-          border: UnderlineInputBorder(
-              borderSide: BorderSide(width: 2, color: kLightThemeColor)),
-          enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(width: 2, color: kLightThemeColor)),
-          focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(width: 2, color: kLightThemeColor)),
-        );
+      border: UnderlineInputBorder(
+          borderSide: BorderSide(width: 2, color: kLightThemeColor)),
+      enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(width: 2, color: kLightThemeColor)),
+      focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(width: 2, color: kLightThemeColor)),
+    );
   }
 
   ColorScheme _colorSheme() {
     return const ColorScheme.light(
-          //onSecondary: kLightThemeColor,
-          //onPrimary: kLightThemeColor,
-          //primaryVariant: kLightThemeColor,
-          //surface: kLightThemeColor,
-          //secondaryVariant: kLightThemeColor,
-          primary: kLightThemeColor,
-          secondary: kLightThemeColor,
-          onSurface: kLightThemeColor,
-        );
+      //onSecondary: kLightThemeColor,
+      //onPrimary: kLightThemeColor,
+      //primaryVariant: kLightThemeColor,
+      //surface: kLightThemeColor,
+      //secondaryVariant: kLightThemeColor,
+      primary: kLightThemeColor,
+      secondary: kLightThemeColor,
+      onSurface: kLightThemeColor,
+    );
   }
 
   TextTheme _textTheme() {
     return const TextTheme(
-            subtitle1: TextStyle(color: kWhiteColor),
-            bodyText2: TextStyle(color: kLightThemeColor),
-            bodyText1: TextStyle(
-                color: kLightThemeColor,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.1),
-            headline2: TextStyle(
-                color: kWhiteColor,
-                height: 1.5,
-                fontSize: 25,
-                fontWeight: FontWeight.bold));
+        subtitle1: TextStyle(color: kWhiteColor),
+        bodyText2: TextStyle(color: kLightThemeColor),
+        bodyText1: TextStyle(
+            color: kLightThemeColor,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.1),
+        headline2: TextStyle(
+            color: kWhiteColor,
+            height: 1.5,
+            fontSize: 25,
+            fontWeight: FontWeight.bold));
   }
 }

@@ -33,6 +33,42 @@ final _models = [
       isTrailer: false),
   CardModel(id: 1, title: 'The Thor', cardImage: grid5, isTrailer: false),
   CardModel(id: 1, title: 'Ultra Superman', cardImage: grid6, isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'Avenger Age of Ultrion',
+      cardImage: grid2,
+      isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'The Amazing Spider Man',
+      cardImage: grid4,
+      isTrailer: false),
+  CardModel(id: 1, title: 'The Thor', cardImage: grid5, isTrailer: false),
+  CardModel(id: 1, title: 'Ultra Superman', cardImage: grid6, isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'Avenger Age of Ultrion',
+      cardImage: grid2,
+      isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'The Amazing Spider Man',
+      cardImage: grid4,
+      isTrailer: false),
+  CardModel(id: 1, title: 'The Thor', cardImage: grid5, isTrailer: false),
+  CardModel(id: 1, title: 'Ultra Superman', cardImage: grid6, isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'Avenger Age of Ultrion',
+      cardImage: grid2,
+      isTrailer: true),
+  CardModel(
+      id: 1,
+      title: 'The Amazing Spider Man',
+      cardImage: grid4,
+      isTrailer: false),
+  CardModel(id: 1, title: 'The Thor', cardImage: grid5, isTrailer: false),
+  CardModel(id: 1, title: 'Ultra Superman', cardImage: grid6, isTrailer: true),
 ];
 
 class HomeScreen extends StatefulWidget {
@@ -275,7 +311,6 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   List<Widget> get _listOfChildren {
     return [
       Text(AppStrings.dashBoard, style: Theme.of(context).textTheme.headline2),
-      
       Row(
         children: [
           Flexible(child: _searchFormField()),
