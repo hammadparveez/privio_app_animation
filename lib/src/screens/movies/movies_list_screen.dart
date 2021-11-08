@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:privio/src/config/routes.dart';
 import 'package:privio/src/domain/models/movie_brief_model.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/images.dart';
+import 'package:supercharged/supercharged.dart';
 
 var _moviesList = [
   MovieBriefModel(
@@ -62,85 +65,110 @@ class MovieListScreen extends StatelessWidget {
               itemCount: _moviesList.length,
               itemBuilder: (_, index) {
                 var movie = _moviesList[index];
-                return Container(
-                  padding: kPaddingXLall,
-                  margin: const EdgeInsets.only(bottom: 2),
-                  color: kLightThemeColor.withAlpha(50),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BannerImageContainer(
-                          image: _moviesList[index].image, onTap: () {}),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: SizedBox(
-                            height: 80,
-                            child: Column(
+                return GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, Routes.movieDetail, arguments: movie),
+                  child: AnimationLimiter(
+                    key: UniqueKey(),
+                    child: AnimationConfiguration.staggeredList(
+                      position: index,
+                      child: SlideAnimation(
+                        curve: Curves.bounceOut,
+                        horizontalOffset: 200,
+                        delay: 250.milliseconds,
+                        duration: 1500.milliseconds,
+                        child: FadeInAnimation(
+                          duration: 1500.milliseconds,
+                          child: Container(
+                            padding: kPaddingXLall,
+                            margin: const EdgeInsets.only(bottom: 2),
+                            color: kLightThemeColor.withAlpha(50),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 5, horizontal: 15),
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          color: movie.hasViewd
-                                              ? Colors.grey
-                                              : movie.isNew
-                                                  ? kGreenColor
-                                                  : kLightThemeColor),
-                                      child: Text(
-                                          movie.hasViewd
-                                              ? 'Viewed'
-                                              : movie.isNew
-                                                  ? 'New'
-                                                  : 'Expired',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1
-                                              ?.copyWith(
-                                                color: kWhiteColor,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                              )),
-                                    ),
-                                    Text(_moviesList[index].date),
-                                    Text(" ${_moviesList[index].time}"),
-                                  ],
-                                ),
-                                Text(_moviesList[index].title,
-                                    style:
-                                        Theme.of(context).textTheme.bodyText1),
-                                Row(
-                                  children: [
-                                    Text(_moviesList[index].isTrailer
-                                        ? 'Trailer'
-                                        : 'Film'),
-                                    Container(
-                                      height: 15,
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 4),
-                                      child: VerticalDivider(
-                                        width: 5,
-                                        color: kWhiteColor,
+                                BannerImageContainer(
+                                    image: _moviesList[index].image,
+                                    onTap: () {}),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: SizedBox(
+                                      height: 80,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 5,
+                                                        horizontal: 15),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(20),
+                                                    color: movie.hasViewd
+                                                        ? Colors.grey
+                                                        : movie.isNew
+                                                            ? kGreenColor
+                                                            : kLightThemeColor),
+                                                child: Text(
+                                                    movie.hasViewd
+                                                        ? 'Viewed'
+                                                        : movie.isNew
+                                                            ? 'New'
+                                                            : 'Expired',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyText1
+                                                        ?.copyWith(
+                                                          color: kWhiteColor,
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        )),
+                                              ),
+                                              Text(_moviesList[index].date),
+                                              Text(" ${_moviesList[index].time}"),
+                                            ],
+                                          ),
+                                          Text(_moviesList[index].title,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyText1),
+                                          Row(
+                                            children: [
+                                              Text(_moviesList[index].isTrailer
+                                                  ? 'Trailer'
+                                                  : 'Film'),
+                                              Container(
+                                                height: 15,
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 4),
+                                                child: VerticalDivider(
+                                                  width: 5,
+                                                  color: kWhiteColor,
+                                                ),
+                                              ),
+                                              Text(_moviesList[index].lang),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Text(_moviesList[index].lang),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 );
               },
