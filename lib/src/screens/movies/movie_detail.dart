@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:privio/src/domain/models/movie_brief_model.dart';
@@ -13,6 +15,7 @@ class MovieDetailScreen extends StatefulWidget {
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  int currentValue = 0;
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -22,64 +25,128 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           slivers: [
             SliverAppBar(
               backgroundColor: kButtonColor,
-              expandedHeight: 100,
-              stretch: true,
+              expandedHeight: MediaQuery.of(context).size.height * .3,
               floating: true,
               pinned: true,
-              automaticallyImplyLeading: false,
-              flexibleSpace: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 15),
-                  child: FlexibleSpaceBar(
-                    background: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 20),
-                          child: Text("WhatsApp",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline6
-                                  ?.copyWith(color: kWhiteColor)),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      grid2,
+                      fit: BoxFit.cover,
+                    ),
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Center(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                              child: Material(
+                                type: MaterialType.transparency,
+                                child: IconButton(
+                                    color: kWhiteColor,
+                                    onPressed: () {},
+                                    icon: const Icon(FontAwesomeIcons.play,
+                                        size: 15)),
+                              )),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 5),
-                          child: Row(
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            color: kWhiteColor,
+                            icon: Icon(Icons.play_arrow),
+                            onPressed: () {},
+                          ),
+                          Column(
                             children: [
+                              RotatedBox(
+                                quarterTurns: 3,
+                                child: SizedBox(
+                                  width: 80,
+                                  child: SliderTheme(
+                                    data: SliderThemeData(
+                                      rangeTrackShape:
+                                          RectangularRangeSliderTrackShape(),
+                                      //trackHeight: 5,
+                                      overlayShape:
+                                          SliderComponentShape.noOverlay,
+                                      thumbShape: RoundSliderThumbShape(
+                                          enabledThumbRadius: 6),
+                                      // SliderComponentShape.noThumb,
+                                      overlappingShapeStrokeColor: Colors.pink,
+                                    ),
+                                    child: Slider(
+                                        inactiveColor: Colors.grey,
+                                        activeColor: kWhiteColor,
+                                        value: currentValue.toDouble(),
+                                        min: 0,
+                                        label: "Value $currentValue",
+                                        max: 100,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            currentValue = value.toInt();
+                                          });
+                                        }),
+                                  ),
+                                ),
+                              ),
                               IconButton(
-                                  color: kWhiteColor,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                  constraints:
-                                      const BoxConstraints(maxHeight: 24),
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.search)),
-                              IconButton(
-                                  color: kWhiteColor,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                  constraints:
-                                      const BoxConstraints(maxHeight: 24),
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.more_vert)),
+                                color: kWhiteColor,
+                                icon: Icon(Icons.volume_up_outlined),
+                                onPressed: () {},
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Row(
+                              children: [
+                                Text("0:13",
+                                    style: TextStyle(color: kWhiteColor)),
+                                Text(" / ",
+                                    style: TextStyle(color: kWhiteColor)),
+                                Text("4:00",
+                                    style: TextStyle(color: kWhiteColor)),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                IconButton(
+                                  color: kWhiteColor,
+                                  icon: Icon(Icons.hd_outlined),
+                                  onPressed: () {},
+                                ),
+                                IconButton(
+                                  color: kWhiteColor,
+                                  icon: Icon(Icons.fullscreen),
+                                  onPressed: () {},
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    titlePadding: EdgeInsets.zero,
-                  ),
+                  ],
                 ),
-              ),
-              bottom: const TabBar(
-                tabs: [
-                  Tab(
-                    text: 'Chats',
-                  ),
-                  Tab(text: 'Status'),
-                  Tab(text: 'Calls'),
-                ],
               ),
             ),
             SliverList(delegate: SliverChildBuilderDelegate((_, index) {

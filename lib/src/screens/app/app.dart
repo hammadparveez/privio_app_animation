@@ -16,9 +16,7 @@ class App extends StatelessWidget {
         navigatorKey: navigatorKey,
         onGenerateRoute: Routes.onGenerateRoute,
         initialRoute: Routes.home,
-        
         theme: ThemeData(
-          
           scaffoldBackgroundColor: kThemeColor,
           appBarTheme: const AppBarTheme(elevation: 0, color: kThemeColor),
           hintColor: kLightThemeColor,
