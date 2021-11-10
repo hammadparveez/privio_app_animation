@@ -33,28 +33,61 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               pinned: true,
               flexibleSpace: CustomFlexibleSpaceBar(
                 background: LayoutBuilder(builder: (context, constraints) {
-                  return Image.asset(
-                    grid2,
-                    fit: BoxFit.cover,
+                  return Container(
+                    margin: EdgeInsets.only(bottom: 5),
+                    child: Image.asset(
+                      grid6,
+                      fit: BoxFit.cover,
+                    ),
                   );
                 }),
                 title: LayoutBuilder(builder: (context, constraints) {
-                  return SizedBox(
-                    height: constraints.maxHeight,
-                    width: constraints.maxWidth,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: SizedBox(
-                            height: 80,
-                            child: _buildHztButtons(),
-                          ),
+                  var isCollapsed = constraints.maxHeight ==
+                      MediaQuery.of(context).padding.top + kToolbarHeight;
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        height: constraints.maxHeight - 10,
+                        width: constraints.maxWidth,
+                        child: Stack(
+                          children: [
+                            isCollapsed ? const SizedBox() : _buildPlayButton(),
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: SizedBox(
+                                height: 70,
+                                child: _buildHztButtons(),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      SliderTheme(
+                        data: SliderThemeData(
+                          overlayShape: SliderComponentShape.noOverlay,
+                          minThumbSeparation: 0,
+                          thumbShape:
+                              RoundSliderThumbShape(enabledThumbRadius: 0),
+                        ),
+                        child: SizedBox(
+                          height: 5,
+                          child: Slider(
+                              inactiveColor: Colors.grey,
+                              activeColor: kWhiteColor,
+                              value: currentValue.toDouble(),
+                              min: 0,
+                              max: 100,
+                              onChanged: (value) {
+                                setState(() {
+                                  currentValue = value.toInt();
+                                });
+                              }),
+                        ),
+                      ),
+                    ],
                   );
                 }),
                 titlePadding: EdgeInsets.zero,
@@ -123,12 +156,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   }
 
   Widget _iconButton(double iconSize, IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Icon(icon, size: iconSize, color: kWhiteColor),
-      ),
+    return IconButton(
+      color: kWhiteColor,
+      icon: Icon(icon),
+      onPressed: () {},
     );
   }
 
