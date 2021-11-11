@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:privio/src/domain/models/movie_brief_model.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/images.dart';
+import 'package:video_player/video_player.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   const MovieDetailScreen({Key? key, required this.model}) : super(key: key);
@@ -17,10 +19,28 @@ class MovieDetailScreen extends StatefulWidget {
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
   int currentValue = 0;
+  bool isFullScreen = false;
+  final videoUri =
+      "https://imdb-video.media-imdb.com/vi2554576921/1434659607842-pgv4ql-1629824548744.mp4?Expires=1636674616&Signature=ZqmoVl5zQhlMUA4BrGAiYbmWPUSRCUJHC~EpuAvgGRhWezvhADjc1~espRa1q2auuihhSK8oKlRzJgZ4rWqouOWyLGc72vE6gEvMmYqh19RKLreOpua3qumKRWMR6Z~pVi5FUmJCIufZXc7~O3xMUVZSuxRbJTuIoTo4OIuuZBFJkSLypTgTdKDv56fyPnfWPTWMhi4AX~AnKwzJt6tt-jgCGeiI22q7EEdZj0QBBQ36PcKcFAbdenije62RvDcgEwkbLnWItVPF2QmJxWi6PHodyW7It~QDgDnBQGqxGIDbtnuu~KQPaLtzWCpOKvCnsHMbq3hGg32LfCknE19Pxg__&Key-Pair-Id=APKAIFLZBVQZ24NQH3KA";
   ValueNotifier<double> value = ValueNotifier(0);
-  final _layoutBuilderKey = GlobalKey();
+  bool isPlayer = false;
+  late VideoPlayerController _videoPlayerController;
+  @override
+  void initState() {
+    super.initState();
+    _videoPlayerController = VideoPlayerController.network(videoUri)
+      ..initialize().then((value) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print("Controller ${_videoPlayerController.value.isInitialized}");
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -28,17 +48,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           slivers: [
             SliverAppBar(
               automaticallyImplyLeading: false,
-              expandedHeight: MediaQuery.of(context).size.height * .3,
+              expandedHeight:
+                  MediaQuery.of(context).orientation == Orientation.landscape
+                      ? MediaQuery.of(context).size.height * .9
+                      : MediaQuery.of(context).size.height * .3,
               floating: true,
               pinned: true,
               flexibleSpace: CustomFlexibleSpaceBar(
                 background: LayoutBuilder(builder: (context, constraints) {
                   return Container(
                     margin: EdgeInsets.only(bottom: 5),
-                    child: Image.asset(
-                      grid6,
-                      fit: BoxFit.cover,
-                    ),
+                    child: _videoPlayerController.value.isInitialized
+                        ? VideoPlayer(_videoPlayerController)
+                        : SizedBox(),
+                    // Image.asset(
+                    //   grid6,
+                    //   fit: BoxFit.cover,
+                    // ),
                   );
                 }),
                 title: LayoutBuilder(builder: (context, constraints) {
@@ -109,7 +135,18 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        _iconButton(28, Icons.play_arrow, () {}),
+        _iconButton(
+            28,
+            _videoPlayerController.value.isPlaying
+                ? Icons.pause
+                : Icons.play_arrow, () {
+          print("Play");
+          setState(() {
+            _videoPlayerController.value.isPlaying
+                ? _videoPlayerController.pause()
+                : _videoPlayerController.play();
+          });
+        }),
         _iconButton(28, Icons.volume_up_outlined, () {}),
         SliderTheme(
           data: SliderThemeData(
@@ -136,10 +173,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         Padding(
           padding: const EdgeInsets.only(left: 5, bottom: 12),
           child: Row(
-            children: const [
-              Text("0:13", style: TextStyle(fontSize: 12, color: kWhiteColor)),
+            children: [
+              Text("${_videoPlayerController.value.position}",
+                  style: TextStyle(fontSize: 12, color: kWhiteColor)),
               Text(" / ", style: TextStyle(fontSize: 12, color: kWhiteColor)),
-              Text("4:00", style: TextStyle(fontSize: 12, color: kWhiteColor)),
+              Text("${_videoPlayerController.value.duration.inMinutes}",
+                  style: TextStyle(fontSize: 12, color: kWhiteColor)),
             ],
           ),
         ),
@@ -148,7 +187,22 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             _iconButton(iconSize, Icons.hd_outlined, () {}),
-            _iconButton(iconSize, Icons.fullscreen, () {}),
+            _iconButton(iconSize, Icons.fullscreen, () {
+              setState(() {
+                isFullScreen = !isFullScreen;
+              });
+              if (isFullScreen) {
+                SystemChrome.setPreferredOrientations([
+                  DeviceOrientation.portraitDown,
+                  DeviceOrientation.portraitUp
+                ]);
+              } else {
+                SystemChrome.setPreferredOrientations([
+                  DeviceOrientation.landscapeLeft,
+                  DeviceOrientation.landscapeRight
+                ]);
+              }
+            }),
           ],
         ),
       ],
@@ -159,7 +213,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     return IconButton(
       color: kWhiteColor,
       icon: Icon(icon),
-      onPressed: () {},
+      onPressed: onTap,
     );
   }
 
