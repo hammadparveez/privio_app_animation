@@ -10,6 +10,7 @@ import 'package:privio/src/screens/movies/components/custom_flexible_spacerbar.d
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/images.dart';
 import 'package:video_player/video_player.dart';
+import 'package:supercharged/supercharged.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   const MovieDetailScreen({Key? key, required this.model}) : super(key: key);
@@ -20,7 +21,7 @@ class MovieDetailScreen extends StatefulWidget {
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
-  int currentValue = 0;
+  bool _isScreenTapped = false;
   bool isFullScreen = false;
   final videoUri =
       "https://imdb-video.media-imdb.com/vi2554576921/1434659607842-pgv4ql-1629824548744.mp4?Expires=1636674616&Signature=ZqmoVl5zQhlMUA4BrGAiYbmWPUSRCUJHC~EpuAvgGRhWezvhADjc1~espRa1q2auuihhSK8oKlRzJgZ4rWqouOWyLGc72vE6gEvMmYqh19RKLreOpua3qumKRWMR6Z~pVi5FUmJCIufZXc7~O3xMUVZSuxRbJTuIoTo4OIuuZBFJkSLypTgTdKDv56fyPnfWPTWMhi4AX~AnKwzJt6tt-jgCGeiI22q7EEdZj0QBBQ36PcKcFAbdenije62RvDcgEwkbLnWItVPF2QmJxWi6PHodyW7It~QDgDnBQGqxGIDbtnuu~KQPaLtzWCpOKvCnsHMbq3hGg32LfCknE19Pxg__&Key-Pair-Id=APKAIFLZBVQZ24NQH3KA";
@@ -83,15 +84,21 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               pinned: true,
               flexibleSpace: CustomFlexibleSpaceBar(
                 background: LayoutBuilder(builder: (context, constraints) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 5),
-                    child: _videoPlayerController.value.isInitialized
-                        ? VideoPlayer(_videoPlayerController)
-                        : SizedBox(),
-                    // Image.asset(
-                    //   grid6,
-                    //   fit: BoxFit.cover,
-                    // ),
+                  return GestureDetector(
+                    onTap: () => setState(() {
+                      print("Is Tapped $_isScreenTapped");
+                      _isScreenTapped = !_isScreenTapped;
+                    }),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 5),
+                      child: _videoPlayerController.value.isInitialized
+                          ? VideoPlayer(_videoPlayerController)
+                          : SizedBox(),
+                      // Image.asset(
+                      //   grid6,
+                      //   fit: BoxFit.cover,
+                      // ),
+                    ),
                   );
                 }),
                 title: LayoutBuilder(builder: (context, constraints) {
@@ -105,9 +112,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                         width: constraints.maxWidth,
                         child: Stack(
                           children: [
-                            isCollapsed ? const SizedBox() : _buildPlayButton(),
-                            Positioned(
-                              bottom: 0,
+                            isCollapsed ||
+                                    _videoPlayerController.value.isPlaying
+                                ? const SizedBox()
+                                : _buildPlayButton(),
+                            AnimatedPositioned(
+                              duration: 500.milliseconds,
+                              bottom: _isScreenTapped ? -100 : 0,
                               left: 0,
                               right: 0,
                               child: SizedBox(
@@ -179,7 +190,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 : _videoPlayerController.play();
           });
         }),
-        _iconButton(28, Icons.volume_up_outlined, () {}),
+        _iconButton(
+            28,
+            _videoPlayerController.value.volume == 0.0
+                ? Icons.volume_off_outlined
+                : _videoPlayerController.value.volume <= 0.5
+                    ? Icons.volume_down_outlined
+                    : Icons.volume_up_outlined,
+            () {}),
         SliderTheme(
           data: SliderThemeData(
             overlayShape: SliderComponentShape.noOverlay,
@@ -192,12 +210,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             child: Slider(
                 inactiveColor: Colors.grey,
                 activeColor: kWhiteColor,
-                value: currentValue.toDouble(),
+                value: _videoPlayerController.value.volume,
                 min: 0,
-                max: 100,
+                max: 1,
                 onChanged: (value) {
                   setState(() {
-                    currentValue = value.toInt();
+                    print("Value $value");
+                    _videoPlayerController.setVolume(value);
                   });
                 }),
           ),
@@ -258,21 +277,25 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       left: 0,
       right: 0,
       bottom: 0,
-      child: Center(
-        child: Container(
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
+      child: AnimatedOpacity(
+        duration: 1.seconds,
+        opacity: _isScreenTapped ? 0 : 1,
+        child: Center(
+          child: Container(
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: IconButton(
+                      color: kWhiteColor,
+                      onPressed: () {},
+                      icon: const Icon(FontAwesomeIcons.play, size: 15)),
+                )),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-              child: Material(
-                type: MaterialType.transparency,
-                child: IconButton(
-                    color: kWhiteColor,
-                    onPressed: () {},
-                    icon: const Icon(FontAwesomeIcons.play, size: 15)),
-              )),
         ),
       ),
     );
