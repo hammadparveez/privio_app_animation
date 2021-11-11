@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'dart:math' as math;
 
+import 'package:privio/src/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:privio/src/domain/models/movie_brief_model.dart';
+import 'package:privio/src/screens/movies/components/custom_flexible_spacerbar.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/images.dart';
 import 'package:video_player/video_player.dart';
@@ -25,11 +27,20 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   ValueNotifier<double> value = ValueNotifier(0);
   bool isPlayer = false;
   late VideoPlayerController _videoPlayerController;
+  Duration _videoPlayedDuration = Duration.zero;
   @override
   void initState() {
     super.initState();
     _videoPlayerController = VideoPlayerController.network(videoUri)
       ..initialize().then((value) => setState(() {}));
+    _videoPlayerController.addListener(() {
+      setState(() {
+        _videoPlayedDuration = Duration(
+            minutes: _videoPlayerController.value.position.inMinutes,
+            seconds: _videoPlayerController.value.position.inSeconds);
+        //_videoPlayerController.value.position;
+      });
+    });
   }
 
   @override
@@ -38,9 +49,25 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     super.dispose();
   }
 
+  _getVideoRemainingDuraiton() {
+    var _d = _videoPlayerController.value.position;
+
+    // String twoDigits(int n) {
+    //   if (n >= 10) return "$n";
+    //   return "0$n";
+    // }
+
+    // String twoDigitHours =
+    //     twoDigits(_d.inHours.remainder(Duration.hoursPerDay));
+    // String twoDigitMinutes =
+    //     twoDigits(_d.inMinutes.remainder(Duration.minutesPerHour));
+    // String twoDigitSeconds =
+    //     twoDigits(_d.inSeconds.remainder(Duration.secondsPerMinute));
+    // return "$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds";
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("Controller ${_videoPlayerController.value.isInitialized}");
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -57,7 +84,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               flexibleSpace: CustomFlexibleSpaceBar(
                 background: LayoutBuilder(builder: (context, constraints) {
                   return Container(
-                    margin: EdgeInsets.only(bottom: 5),
+                    margin: const EdgeInsets.only(bottom: 5),
                     child: _videoPlayerController.value.isInitialized
                         ? VideoPlayer(_videoPlayerController)
                         : SizedBox(),
@@ -93,6 +120,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       ),
                       SliderTheme(
                         data: SliderThemeData(
+                          trackHeight: 4,
                           overlayShape: SliderComponentShape.noOverlay,
                           minThumbSeparation: 0,
                           thumbShape:
@@ -103,12 +131,17 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           child: Slider(
                               inactiveColor: Colors.grey,
                               activeColor: kWhiteColor,
-                              value: currentValue.toDouble(),
+                              value: _videoPlayerController
+                                  .value.position.inMilliseconds
+                                  .toDouble(),
                               min: 0,
-                              max: 100,
+                              max: _videoPlayerController
+                                  .value.duration.inMilliseconds
+                                  .toDouble(),
                               onChanged: (value) {
                                 setState(() {
-                                  currentValue = value.toInt();
+                                  _videoPlayerController.seekTo(
+                                      Duration(milliseconds: value.toInt()));
                                 });
                               }),
                         ),
@@ -120,7 +153,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               ),
             ),
             SliverList(delegate: SliverChildBuilderDelegate((_, index) {
-              return ListTile(
+              return const ListTile(
                 title: Text("Hello World"),
               );
             }))
@@ -140,7 +173,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             _videoPlayerController.value.isPlaying
                 ? Icons.pause
                 : Icons.play_arrow, () {
-          print("Play");
           setState(() {
             _videoPlayerController.value.isPlaying
                 ? _videoPlayerController.pause()
@@ -156,7 +188,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           child: SizedBox(
             width: 50,
-            height: iconSize + 15,
+            height: 40,
             child: Slider(
                 inactiveColor: Colors.grey,
                 activeColor: kWhiteColor,
@@ -174,10 +206,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           padding: const EdgeInsets.only(left: 5, bottom: 12),
           child: Row(
             children: [
-              Text("${_videoPlayerController.value.position}",
+              Text(
+                  "${_videoPlayerController.value.position.toPlayBackDuration}",
                   style: TextStyle(fontSize: 12, color: kWhiteColor)),
               Text(" / ", style: TextStyle(fontSize: 12, color: kWhiteColor)),
-              Text("${_videoPlayerController.value.duration.inMinutes}",
+              Text(
+                  "${_videoPlayerController.value.duration.toPlayBackDuration}",
                   style: TextStyle(fontSize: 12, color: kWhiteColor)),
             ],
           ),
@@ -211,6 +245,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
   Widget _iconButton(double iconSize, IconData icon, VoidCallback onTap) {
     return IconButton(
+      constraints: BoxConstraints(maxWidth: kMinInteractiveDimension - 10),
       color: kWhiteColor,
       icon: Icon(icon),
       onPressed: onTap,
@@ -240,252 +275,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               )),
         ),
       ),
-    );
-  }
-}
-
-//////////////////////////////////////////////////////
-///
-///
-///
-///Custom FLexible Space Bar
-class CustomFlexibleSpaceBar extends StatefulWidget {
-  const CustomFlexibleSpaceBar({
-    Key? key,
-    this.title,
-    this.background,
-    this.centerTitle,
-    this.titlePadding,
-    this.collapseMode = CollapseMode.parallax,
-    this.stretchModes = const <StretchMode>[StretchMode.zoomBackground],
-  })  : assert(collapseMode != null),
-        super(key: key);
-
-  final Widget? title;
-
-  final Widget? background;
-
-  final bool? centerTitle;
-
-  final CollapseMode collapseMode;
-
-  final List<StretchMode> stretchModes;
-
-  final EdgeInsetsGeometry? titlePadding;
-
-  static Widget createSettings({
-    double? toolbarOpacity,
-    double? minExtent,
-    double? maxExtent,
-    bool? isScrolledUnder,
-    required double currentExtent,
-    required Widget child,
-  }) {
-    //assert(currentExtent != null);
-    return FlexibleSpaceBarSettings(
-      toolbarOpacity: toolbarOpacity ?? 1.0,
-      minExtent: minExtent ?? currentExtent,
-      maxExtent: maxExtent ?? currentExtent,
-      isScrolledUnder: isScrolledUnder,
-      currentExtent: currentExtent,
-      child: child,
-    );
-  }
-
-  @override
-  State<CustomFlexibleSpaceBar> createState() => _FlexibleSpaceBarState();
-}
-
-class _FlexibleSpaceBarState extends State<CustomFlexibleSpaceBar> {
-  bool _getEffectiveCenterTitle(ThemeData theme) {
-    if (widget.centerTitle != null) return widget.centerTitle!;
-    //assert(theme.platform != null);
-    switch (theme.platform) {
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        return false;
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        return true;
-    }
-  }
-
-  Alignment _getTitleAlignment(bool effectiveCenterTitle) {
-    if (effectiveCenterTitle) return Alignment.bottomCenter;
-    final TextDirection textDirection = Directionality.of(context);
-
-    switch (textDirection) {
-      case TextDirection.rtl:
-        return Alignment.bottomRight;
-      case TextDirection.ltr:
-        return Alignment.bottomLeft;
-    }
-  }
-
-  double _getCollapsePadding(double t, FlexibleSpaceBarSettings settings) {
-    switch (widget.collapseMode) {
-      case CollapseMode.pin:
-        return -(settings.maxExtent - settings.currentExtent);
-      case CollapseMode.none:
-        return 0.0;
-      case CollapseMode.parallax:
-        final double deltaExtent = settings.maxExtent - settings.minExtent;
-        return -Tween<double>(begin: 0.0, end: deltaExtent / 4.0).transform(t);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final FlexibleSpaceBarSettings settings = context
-            .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>()!;
-
-        final List<Widget> children = <Widget>[];
-
-        final double deltaExtent = settings.maxExtent - settings.minExtent;
-
-        // 0.0 -> Expanded
-        // 1.0 -> Collapsed to toolbar
-        final double t =
-            (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
-                .clamp(0.0, 1.0);
-
-        // background
-        if (widget.background != null) {
-          final double fadeStart =
-              math.max(0.0, 1.0 - kToolbarHeight / deltaExtent);
-          const double fadeEnd = 1.0;
-          assert(fadeStart <= fadeEnd);
-          // If the min and max extent are the same, the app bar cannot collapse
-          // and the content should be visible, so opacity = 1.
-          var interval = 1.0 - Interval(fadeStart, fadeEnd).transform(t);
-          final precisedInterval = double.parse(interval.toStringAsFixed(1));
-          final customInterval = math.max(precisedInterval, 0.6);
-
-          final double opacity =
-              settings.maxExtent == settings.minExtent ? 1.0 : customInterval;
-          double height = settings.maxExtent;
-
-          // StretchMode.zoomBackground
-          if (widget.stretchModes.contains(StretchMode.zoomBackground) &&
-              constraints.maxHeight > height) {
-            height = constraints.maxHeight;
-          }
-          children.add(Positioned(
-            top: _getCollapsePadding(t, settings),
-            left: 0.0,
-            right: 0.0,
-            height: height,
-            child: Opacity(
-              // IOS is relying on this semantics node to correctly traverse
-              // through the app bar when it is collapsed.
-              alwaysIncludeSemantics: true,
-              opacity: opacity,
-              child: widget.background,
-            ),
-          ));
-
-          // StretchMode.blurBackground
-          if (widget.stretchModes.contains(StretchMode.blurBackground) &&
-              constraints.maxHeight > settings.maxExtent) {
-            final double blurAmount =
-                (constraints.maxHeight - settings.maxExtent) / 10;
-            children.add(Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: blurAmount,
-                  sigmaY: blurAmount,
-                ),
-                child: Container(
-                  color: Colors.transparent,
-                ),
-              ),
-            ));
-          }
-        }
-
-        // title
-        if (widget.title != null) {
-          final ThemeData theme = Theme.of(context);
-
-          Widget? title;
-          switch (theme.platform) {
-            case TargetPlatform.iOS:
-            case TargetPlatform.macOS:
-              title = widget.title;
-              break;
-            case TargetPlatform.android:
-            case TargetPlatform.fuchsia:
-            case TargetPlatform.linux:
-            case TargetPlatform.windows:
-              title = Semantics(
-                namesRoute: true,
-                child: widget.title,
-              );
-              break;
-          }
-
-          // StretchMode.fadeTitle
-          if (widget.stretchModes.contains(StretchMode.fadeTitle) &&
-              constraints.maxHeight > settings.maxExtent) {
-            final double stretchOpacity = 1 -
-                (((constraints.maxHeight - settings.maxExtent) / 100)
-                    .clamp(0.0, 1.0));
-            title = Opacity(
-              opacity: stretchOpacity,
-              child: title,
-            );
-          }
-
-          final double opacity = settings.toolbarOpacity;
-          if (opacity > 0.0) {
-            TextStyle titleStyle = theme.primaryTextTheme.headline6!;
-            titleStyle = titleStyle.copyWith(
-              color: titleStyle.color!.withOpacity(opacity),
-            );
-            final bool effectiveCenterTitle = _getEffectiveCenterTitle(theme);
-            final EdgeInsetsGeometry padding = widget.titlePadding ??
-                EdgeInsetsDirectional.only(
-                  start: effectiveCenterTitle ? 0.0 : 72.0,
-                  bottom: 16.0,
-                );
-            final double scaleValue =
-                Tween<double>(begin: 1, end: 1.0).transform(t);
-            final Matrix4 scaleTransform = Matrix4.identity()
-              ..scale(scaleValue, scaleValue, 1.0);
-            final Alignment titleAlignment =
-                _getTitleAlignment(effectiveCenterTitle);
-            children.add(Container(
-              padding: padding,
-              child: Transform(
-                alignment: titleAlignment,
-                transform: scaleTransform,
-                child: Align(
-                  alignment: titleAlignment,
-                  child: DefaultTextStyle(
-                    style: titleStyle,
-                    child: LayoutBuilder(
-                      builder:
-                          (BuildContext context, BoxConstraints constraints) {
-                        return Container(
-                          width: constraints.maxWidth / scaleValue,
-                          alignment: titleAlignment,
-                          child: title,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ));
-          }
-        }
-
-        return ClipRect(child: Stack(children: children));
-      },
     );
   }
 }
