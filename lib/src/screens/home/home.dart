@@ -12,6 +12,7 @@ import 'package:privio/src/domain/state_management/pods.dart';
 import 'package:privio/src/screens/app_animations/app_animations.dart';
 import 'package:privio/src/screens/home/components/animated_positioned_next_btn.dart';
 import 'package:privio/src/screens/home/components/stacked_positioned_animation.dart';
+import 'package:privio/src/screens/widgets/custom_drawer.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/helper.dart';
 import 'package:privio/src/shared/images.dart';
@@ -80,12 +81,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   final _positionedKey = GlobalKey<StackedPositionedAnimatedState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late ScrollController _scrollController;
-
+  late Animation<double> _animationIcon;
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _animationIcon = Tween(begin: 0.0, end: 1.0).animate(controller);
   }
 
   @override
@@ -108,7 +111,9 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: _buildAppBar(),
+      drawer: _buildDrawer(),
       body: Padding(
         padding: kPaddingXlHzt,
         child: Stack(
@@ -352,7 +357,15 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
         logo,
         width: 150,
       ),
-      leading: const Icon(Icons.menu),
+      leading: AnimatedIconButton(
+        onTap: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+      ),
     );
+  }
+
+  Widget _buildDrawer() {
+    return CustomDrawer();
   }
 }
