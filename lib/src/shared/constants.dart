@@ -24,5 +24,6 @@ const kPaddingXLall = EdgeInsets.all(15);
 const kPaddingXlHzt = EdgeInsets.symmetric(horizontal: 15);
 const kPaddingXlVrt = EdgeInsets.symmetric(vertical: 15);
 const kPaddingXXlVrt = EdgeInsets.symmetric(vertical: 20);
+const kPaddingXXlAll = EdgeInsets.all(20);
 const kPadVrtLargeAndHztSmall =
     EdgeInsets.symmetric(vertical: 8, horizontal: 15);
