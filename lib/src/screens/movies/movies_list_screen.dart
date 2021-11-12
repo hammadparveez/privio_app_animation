@@ -4,9 +4,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:privio/src/config/routes.dart';
 import 'package:privio/src/domain/models/movie_brief_model.dart';
+import 'package:privio/src/domain/state_management/pods.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/images.dart';
 import 'package:supercharged/supercharged.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 var _moviesList = [
   MovieBriefModel(
@@ -66,9 +68,11 @@ class MovieListScreen extends StatelessWidget {
               itemBuilder: (_, index) {
                 var movie = _moviesList[index];
                 return GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, Routes.movieDetail, arguments: movie),
+                  onTap: () {
+                    Navigator.pushNamed(context, Routes.movieDetail,
+                        arguments: movie);
+                  },
                   child: AnimationLimiter(
-                    key: UniqueKey(),
                     child: AnimationConfiguration.staggeredList(
                       position: index,
                       child: SlideAnimation(
@@ -87,7 +91,9 @@ class MovieListScreen extends StatelessWidget {
                               children: [
                                 BannerImageContainer(
                                     image: _moviesList[index].image,
-                                    onTap: () {}),
+                                    onTap: () {
+                                      print("Hi");
+                                    }),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Padding(
@@ -111,7 +117,8 @@ class MovieListScreen extends StatelessWidget {
                                                         horizontal: 15),
                                                 decoration: BoxDecoration(
                                                     borderRadius:
-                                                        BorderRadius.circular(20),
+                                                        BorderRadius.circular(
+                                                            20),
                                                     color: movie.hasViewd
                                                         ? Colors.grey
                                                         : movie.isNew
@@ -134,7 +141,8 @@ class MovieListScreen extends StatelessWidget {
                                                         )),
                                               ),
                                               Text(_moviesList[index].date),
-                                              Text(" ${_moviesList[index].time}"),
+                                              Text(
+                                                  " ${_moviesList[index].time}"),
                                             ],
                                           ),
                                           Text(_moviesList[index].title,

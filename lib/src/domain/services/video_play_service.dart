@@ -19,7 +19,7 @@ class VideoPlayService extends ChangeNotifier {
     }
     return _videoPlayerController;
   }
-
+  
   void playOrPause() async {
     _videoPlayerController.value.isPlaying
         ? _videoPlayerController.pause()
@@ -64,6 +64,7 @@ class VideoPlayService extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get isInitialized => videoPlayerController.value.isInitialized;
   bool get isOptionVisible => _isOptionVisible;
   String get watchedDuration =>
       videoPlayerController.value.position.toPlayBackDuration;
@@ -79,7 +80,7 @@ class VideoPlayService extends ChangeNotifier {
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
+    videoPlayerController.dispose();
     super.dispose();
   }
 }
