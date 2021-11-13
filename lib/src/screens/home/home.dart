@@ -4,6 +4,7 @@ import 'package:animated_size_and_fade/animated_size_and_fade.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:privio/src/config/routes.dart';
@@ -87,6 +88,9 @@ class _HomeScreenState extends State<HomeScreen> with AnimationMixin {
   @override
   void initState() {
     super.initState();
+ SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(statusBarColor: kTransParent ));
+    
     _scrollController = ScrollController();
     _animationIcon = Tween(begin: 0.0, end: 1.0).animate(controller);
   }

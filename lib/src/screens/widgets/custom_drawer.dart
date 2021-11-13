@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:privio/src/shared/constants.dart';
 import 'package:privio/src/shared/images.dart';
 import 'package:simple_animations/anicoto/animation_mixin.dart';
@@ -14,23 +15,67 @@ class CustomDrawer extends StatefulWidget {
 
 class _CustomDrawerState extends State<CustomDrawer> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: ColoredBox(
-        color: kThemeColor,
-        child: ListView(
-          children: [
-            Row(
-              children: [
-                AnimatedIconButton(
-                    showCloseFirst: true,
-                    onTap: () {
-                      Navigator.pop(context);
-                    }),
-                Image.asset(logo, width: 150),
-              ],
+    return AnnotatedRegion(
+      value: SystemUiOverlayStyle(statusBarColor: kTransParent),
+      child: Drawer(
+        child: Container(
+          padding: kPaddingDefaultVrt,
+          color: kThemeColor,
+          child: Theme(
+            data: ThemeData(
+              textTheme: TextTheme(
+                bodyText2: Theme.of(context)
+                    .textTheme
+                    .bodyText2!
+                    .copyWith(fontSize: 14, fontWeight: FontWeight.w100),
+                bodyText1: Theme.of(context)
+                    .textTheme
+                    .bodyText1!
+                    .copyWith(fontWeight: FontWeight.w500),
+              ),
             ),
-          ],
+            child: Material(
+              type: MaterialType.transparency,
+              child: ListView(
+                children: [
+                  Row(
+                    children: [
+                      AnimatedIconButton(
+                          showCloseFirst: true,
+                          onTap: () {
+                            Navigator.pop(context);
+                          }),
+                      Image.asset(logo, width: 150),
+                    ],
+                  ),
+                  ListTile(
+                    onTap: () {},
+                    horizontalTitleGap: 0,
+                    leading: Icon(Icons.person, color: kWhiteColor),
+                    title: Text("demo.privio.eu"),
+                  ),
+                  const Divider(
+                    color: kLightThemeColor,
+                    height: 16,
+                    thickness: 2,
+                  ),
+                  ListTile(
+                    onTap: () {},
+                    horizontalTitleGap: 0,
+                    leading: Icon(Icons.person, color: kWhiteColor),
+                    title: Text("demo.privio.eu"),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
