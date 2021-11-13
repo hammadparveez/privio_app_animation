@@ -2,6 +2,7 @@ import 'package:flutter/rendering.dart';
 
 const kThemeColor = Color(0xff29254a);
 const kLightThemeColor = Color(0xFF7463DD);
+const kUltraLightThemeColor = Color(0xFF9A8CF3);
 const kWhiteColor = Color(0xffffffff);
 const kBlackColor = Color(0xff000000);
 const kTransParent = Color(0x00ffffff);

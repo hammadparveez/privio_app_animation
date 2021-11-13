@@ -49,28 +49,28 @@ class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
               customAnimationControl = CustomAnimationControl.play;
             }));
     //Show Arrow after 5 seconds
-    _updateCrossFadeState(5500.milliseconds, CrossFadeState.showSecond);
+  //  _updateCrossFadeState(5500.milliseconds, CrossFadeState.showSecond);
   }
 
   void bringUpButton() {
     setState(() => customAnimationControl = CustomAnimationControl.play);
 
-    _updateCrossFadeState(3500.milliseconds, CrossFadeState.showSecond);
+   // _updateCrossFadeState(3500.milliseconds, CrossFadeState.showSecond);
   }
 
   takeDownButton() {
     setState(() => customAnimationControl = CustomAnimationControl.playReverse);
-    _updateCrossFadeState(700.milliseconds, CrossFadeState.showFirst);
+ //   _updateCrossFadeState(700.milliseconds, CrossFadeState.showFirst);
   }
 
-  _updateCrossFadeState(Duration duration, CrossFadeState state) {
-    Future.delayed(
-      duration,
-      () => setState(() {
-        _currentFadeState = state;
-      }),
-    );
-  }
+  // _updateCrossFadeState(Duration duration, CrossFadeState state) {
+  //   Future.delayed(
+  //     duration,
+  //     () => setState(() {
+  //       _currentFadeState = state;
+  //     }),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -121,23 +121,21 @@ class StackedPositionedAnimatedState extends State<StackedPositionedAnimated>
 
   Widget _scalingAnimatedBtn(TimelineValue<Prop> prop) {
     return CustomScalingAnimation(
-      key: _scalingStateKey,
-      child: AnimatedSizeAndFade(
-        child: _currentFadeState == CrossFadeState.showSecond
-            ? _buildScrollIconButton()
-            : FractionallySizedBox(
-                widthFactor: 1,
-                child: ElevatedButton(
-                  child: Text(
-                    "Scroll More".toUpperCase(),
-                    style: TextStyle(fontSize: prop.get(Prop.size)),
-                  ),
-                  onPressed: _onScrollTap,
-                  style: ButtonStyle(
-                    shape: MaterialStateProperty.all(prop.get(Prop.radius)),
-                  ),
-                ),
-              ),
+        key: _scalingStateKey, child: _buildScrollIconButton());
+  }
+
+  FractionallySizedBox _scrollMoreElevatedButton(TimelineValue<Prop> prop) {
+    return FractionallySizedBox(
+      widthFactor: 1,
+      child: ElevatedButton(
+        child: Text(
+          "Scroll More".toUpperCase(),
+          style: TextStyle(fontSize: prop.get(Prop.size)),
+        ),
+        onPressed: _onScrollTap,
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all(prop.get(Prop.radius)),
+        ),
       ),
     );
   }

@@ -12,11 +12,11 @@ TimelineTween<Prop> createScrollButtonTween() {
   var tween = TimelineTween<Prop>(curve: Curves.easeInOutBack);
 
   var _fristScene = tween
-      .addScene(begin: 0.milliseconds, end: 1500.milliseconds)
+      .addScene(begin: 0.milliseconds, end: 800.milliseconds)
       .animate(Prop.y, tween: positioningTween);
 
   _fristScene
-      .addSubsequentScene(delay: 500.milliseconds, duration: 2000.milliseconds)
+      .addSubsequentScene(delay: 300.milliseconds, duration: 800.milliseconds)
       .animate(
         Prop.i,
         tween: DecorationTween(
@@ -57,9 +57,7 @@ TimelineTween<Prop> createImageSlideTween() {
   var tween = TimelineTween<Prop>();
   var firstScene = tween.addScene(begin: 0.seconds, end: 1000.milliseconds);
   firstScene
-      .animate(Prop.translateX,
-          tween:
-              Tween<double>(begin:100, end: 0))
+      .animate(Prop.translateX, tween: Tween<double>(begin: 100, end: 0))
       .animate(Prop.opacity, tween: Tween<double>(begin: 0, end: 1));
   return tween;
 }
