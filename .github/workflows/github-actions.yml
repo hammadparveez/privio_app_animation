@@ -12,7 +12,7 @@ jobs:
       - run: flutter test
       - run: flutter build ios --release --no-codesign
       - name: Upload iPA
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v1
         with:
-          name: ios-build
-          path: build/ios/iphoneos
+         name: ios-build
+         path: build/ios/iphoneos
