@@ -11,5 +11,5 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:privio/main.dart';
 
 void main() {
-  test('Alex Murphy', () => print("Flutter is tested"));
+  test('Mason Brian', () => print("Flutter is love"));
 }
